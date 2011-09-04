@@ -1,0 +1,25 @@
+{
+  "name": "nap",
+  "version": "0.0.1",
+  "author": "Craig Spaeth <craigspaeth@gmail.com> (http://craigspaeth.com)",
+  "description": "An asset packager for node.",
+  "keywords": [
+    "node",
+    "asset",
+    "package",
+    "css",
+    "javascript",
+    "javascript templates"
+  ],
+  "repository": "http://github.com/craigspaeth/nap",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "coffee-script": "~1.1.2"
+  }
+  "main": ".lib/nap",
+  "scripts": {
+    "prepublish": "cake build",
+    "test": "cake test"
+  }
+}
