@@ -13,11 +13,13 @@
   ],
   "repository": "http://github.com/craigspaeth/nap",
   "dependencies": {
+    "underscore": "*"
   },
   "devDependencies": {
-    "coffee-script": "~1.1.2"
-  }
-  "main": ".lib/nap",
+    "coffee-script": "*",
+    "jasmine-node": "*"
+  },
+  "main": "lib/nap",
   "scripts": {
     "prepublish": "cake build",
     "test": "cake test"

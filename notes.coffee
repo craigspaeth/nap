@@ -4,7 +4,7 @@
 # Nap manipulators have logic that skips or fixes certain things depending on user-agents
 # Packages up anything not labeled 'manipulators' as .js, .css, or .jst
 
-@javascripts =
+@js =
   
   manipulators:
     'development': [nap.compileCoffeescript]
@@ -19,7 +19,7 @@
     /^/
   ] 
 
-@stylesheets =
+@css =
   
   manipulators:
     'development': [nap.compileStylus]
@@ -30,7 +30,7 @@
     'app/stylesheets/icons.stylus'
   ]
   
-@templates =
+@jst =
   
   manipulators: 
     'development': [nap.packageJST]
