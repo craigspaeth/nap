@@ -1,2 +1,2 @@
 var foo = 'foo';
-var bar = 'bar';
+var bar = 'bar';qux
