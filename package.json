@@ -15,7 +15,8 @@
   "dependencies": {
     "underscore": "*",
     "coffee-script": "*",
-    "stylus": "*"
+    "stylus": "*",
+    "uglify-js": "*"
   },
   "devDependencies": {
     "jasmine-node": "*"

@@ -17,6 +17,13 @@ fs = require 'fs'
     path = path.substr(path.indexOf(tmplDirname) + tmplDirname.length)
   path = path.replace('.' + ext, '')
   "window.JST[\"#{path}\"] = JSTCompile(\"#{escapedFile}\");"
+@ugilfyJS = (file) ->
+  jsp = require("uglify-js").parser
+  pro = require("uglify-js").uglify
+  ast = jsp.parse file
+  ast = pro.ast_mangle(ast)
+  ast = pro.ast_squeeze(ast)
+  pro.gen_code(ast)
   
 # Given an well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
