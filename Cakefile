@@ -18,3 +18,12 @@ task 'testuglify', ->
   ast = pro.ast_squeeze(ast)
   final_code = pro.gen_code(ast)
   console.log final_code
+  
+task 'testcssmin', ->
+  yui = require(__dirname + '/deps/yui_cssmin.js')
+  console.log yui.minify "
+    body {
+      background: red;
+      font-style: italic;
+    }
+  "

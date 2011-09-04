@@ -24,6 +24,7 @@ fs = require 'fs'
   ast = pro.ast_mangle(ast)
   ast = pro.ast_squeeze(ast)
   pro.gen_code(ast)
+@yuiCssMin = (file) -> require('../deps/yui_cssmin.js').minify file
   
 # Given an well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
