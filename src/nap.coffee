@@ -9,7 +9,15 @@ fs = require 'fs'
   css = ''
   require('stylus').render file, (err, out) -> throw err if err; css = out
   css
-
+@packageJST = (file, path) ->
+  tmplDirname = 'templates/'
+  ext = _.last path.split('.')
+  escapedFile = file.replace(/\n+/g, '\\n').replace /"/g, '\\"'
+  if path.indexOf(tmplDirname) isnt -1
+    path = path.substr(path.indexOf(tmplDirname) + tmplDirname.length)
+  path = path.replace('.' + ext, '')
+  "window.JST[\"#{path}\"] = JSTCompile(\"#{escapedFile}\");"
+  
 # Given an well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
 # to the given directory.
@@ -53,17 +61,17 @@ fs = require 'fs'
               newFiles.push(root + '/' + file)
           files.splice fileIndex, 1, newFiles...
       
-      # Convert the files array into strings of their contents
-      files = (fs.readFileSync(file).toString() for file in files)
+      # Map files contents
+      fileStrs = (fs.readFileSync(file).toString() for file in files)
       
       # Run any pre manipulators on each of the files
       for i, file of files
         if preManipulators? and preManipulators[options.env]?
           for manipulator in preManipulators[options.env]
-            files[i] = manipulator(file)
+            fileStrs[i] = manipulator(fileStrs[i], file)
       
       # Concatenate the files
-      concatFileStr = (file for file in files).join '\n'
+      concatFileStr = (file for file in fileStrs).join '\n'
       
       # Run any post manipulators on the concatenated file
       if postManipulators? and postManipulators[options.env]?

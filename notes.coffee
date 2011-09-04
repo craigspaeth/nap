@@ -49,7 +49,7 @@
       preManipulate: [nap.packageJSTs]
     'production':
       preManipulate: [nap.packageJSTs]
-      postManipulate: [nap.jstGlobal, nap.gzip]
+      postManipulate: [nap.gzip]
     
   all: ['app/templates/**/*.jade']
 
