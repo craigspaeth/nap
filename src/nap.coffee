@@ -5,6 +5,10 @@ fs = require 'fs'
 
 # Library of manipulator functions
 @compileCoffeescript = (file) -> require('coffee-script').compile(file)
+@compileStylus = (file) -> 
+  css = ''
+  require('stylus').render file, (err, out) -> throw err if err; css = out
+  css
 
 # Given an well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package

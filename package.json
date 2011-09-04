@@ -13,10 +13,11 @@
   ],
   "repository": "http://github.com/craigspaeth/nap",
   "dependencies": {
-    "underscore": "*"
+    "underscore": "*",
+    "coffee-script": "*",
+    "stylus": "*"
   },
   "devDependencies": {
-    "coffee-script": "*",
     "jasmine-node": "*"
   },
   "main": "lib/nap",
