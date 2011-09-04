@@ -46,10 +46,10 @@
   
   manipulators: 
     'development': 
-      preManipulate: [nap.packageJST]
+      preManipulate: [nap.packageJSTs]
     'production':
-      preManipulate: [nap.packageJST]
-      postManipulate: [nap.prependJST, nap.gzip]
+      preManipulate: [nap.packageJSTs]
+      postManipulate: [nap.jstGlobal, nap.gzip]
     
   all: ['app/templates/**/*.jade']
 
