@@ -26,7 +26,8 @@ fs = require 'fs'
           newFiles = []
           fileUtil.walkSync root, (root, flds, fls) ->
             root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
-            newFiles.push root + file for file in fls
+            for file in fls
+              newFiles.push(root + file) if file.match(new RegExp ext + '$')?
           files.splice fileIndex, 1, newFiles...
           
       # Concatenate the files
