@@ -3,12 +3,22 @@
 # First set up asset packaging without minifying/compressing/image embedding/embedded fonts
 # Nap manipulators have logic that skips or fixes certain things depending on user-agents
 # Packages up anything not labeled 'manipulators' as the extension
-
+# Scaffolding command line tool. e.g. 
+#     $ nap init
+#     $ what javascript language are you using? 1. coffeescript, 2. none
+#     $ what stylsheet language are you using? 1. stylus, 2. sass, 3. none
+#     $ what JST language are you using? 1. jade, 2. haml.js, 3. jqtmpl, 4. mustache, 5. no JSTs
+#     $ would you like to output in coffeescript or javascript? 1. coffescript, 2. javascript
+#     $ Thank you! assets.coffee has been compiled in the current directory.
+# 
 @js =
   
   manipulators:
-    'development': [nap.compileCoffeescript]
-    'production': [nap.compileCoffeescript, nap.uglifyJS, nap.gzip]
+    'development': 
+      preManipulate: [nap.compileCoffeescript]
+    'production': 
+      preManipulate: [nap.compileCoffeescript]
+      postManipulate: [nap.uglifyJS, nap.gzip]
   
   vendor: ['app/client/vendor/*.js']
 
@@ -22,8 +32,10 @@
 @css =
   
   manipulators:
-    'development': [nap.compileStylus]
-    'production': [nap.compileStylus, nap.embedImages, nap.embedFonts, nap.yuiCompressor, nap.gzip]
+    'development': 
+      postManipulate: [nap.compileStylus]
+    'production': 
+      postManipulate: [nap.compileStylus, nap.embedImages, nap.embedFonts, nap.yuiCompressor, nap.gzip]
   
   splash: [
     'app/stylesheets/splash.stylus'
@@ -33,8 +45,11 @@
 @jst =
   
   manipulators: 
-    'development': [nap.packageJST]
-    'production': [nap.packageJST, nap.gzip]
+    'development': 
+      preManipulate: [nap.packageJST]
+    'production':
+      preManipulate: [nap.packageJST]
+      postManipulate: [nap.prependJST, nap.gzip]
     
   all: ['app/templates/**/*.jade']
 

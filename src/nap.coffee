@@ -3,7 +3,10 @@ fileUtil = require 'file'
 _ = require 'underscore'
 fs = require 'fs'
 
-# Given an well formatted assets object, package will concat the files and 
+# Library of manipulator functions
+@compileCoffeescript = (file) -> require('coffee-script').compile(file)
+
+# Given an well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
 # to the given directory.
 @package = (assets, dir, options = { env: process.env.NODE_ENV || 'development' }) ->
@@ -11,8 +14,11 @@ fs = require 'fs'
   for extension, keys of assets
     
     # Split off the manipulators and packages
-    packages = _.clone(keys); delete packages['manipulators']
-    manipulators = keys.manipulators
+    packages = _.clone(keys)
+    delete packages['preManipulate']
+    delete packages['postManipulate'] 
+    preManipulators = keys.preManipulate
+    postManipulators = keys.postManipulate
     
     # Go through each package and concatenate the file contents into one file
     for packageName, files of packages
@@ -42,13 +48,22 @@ fs = require 'fs'
             if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')?
               newFiles.push(root + '/' + file)
           files.splice fileIndex, 1, newFiles...
-          
-      # Concatenate the files
-      concatFileStr = (fs.readFileSync(file).toString() for file in files).join '\n'
       
-      # Run the concatenated files through each manipulator in order
-      if manipulators? and manipulators[options.env]?
-        for manipulator in manipulators[options.env]
+      # Convert the files array into strings of their contents
+      files = (fs.readFileSync(file).toString() for file in files)
+      
+      # Run any pre manipulators on each of the files
+      for i, file of files
+        if preManipulators? and preManipulators[options.env]?
+          for manipulator in preManipulators[options.env]
+            files[i] = manipulator(file)
+      
+      # Concatenate the files
+      concatFileStr = (file for file in files).join '\n'
+      
+      # Run any post manipulators on the concatenated file
+      if postManipulators? and postManipulators[options.env]?
+        for manipulator in postManipulators[options.env]
           concatFileStr = manipulator(concatFileStr)
       
       fs.writeFileSync "#{dir}/#{packageName}.#{extension}", concatFileStr

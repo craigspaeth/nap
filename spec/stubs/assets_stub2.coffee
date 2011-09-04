@@ -1,8 +1,8 @@
 @js =
-
-  manipulators:
-    'development': [( (file) -> file += 'baz' )]
-    'production': [( (file) -> file += 'qux' )]
+ 
+  preManipulate: 
+      'development': [( (file) -> file += 'foo' )]
+      'production': [( (file) -> file += 'bar' )]
   
   foo: [
     'spec/fixtures/js/foo.js'

@@ -7,4 +7,4 @@ task 'build', 'src/ --> lib/', ->
       throw new Error "Error while compiling .coffee to .js"
   
 task 'testpackage', 'runs a package of the test', ->
-  require(__dirname + '/src/nap.coffee').package require(__dirname + '/spec/helpers/assets_stub2.coffee'), __dirname + '/spec/fixtures/assets' 
+  require(__dirname + '/src/nap.coffee').package require(__dirname + '/spec/stubs/assets_stub2.coffee'), __dirname + '/spec/fixtures/assets'
