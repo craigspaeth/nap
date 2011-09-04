@@ -5,5 +5,6 @@ task 'build', 'src/ --> lib/', () ->
       console.log stdout
       console.log stderr
       throw new Error "Error while compiling .coffee to .js"
-      
-task 'test', 'run tests', (options) ->
+  
+task 'testpackage', 'runs a package of the test', ->
+  require(__dirname + '/src/nap.coffee').package require(__dirname + '/spec/helpers/assets_stub.coffee'), __dirname + '/spec/fixtures/assets' 

@@ -1,1 +1,1 @@
-var bar = 'bar;'
+var bar = 'bar';
