@@ -17,9 +17,11 @@ fs = require 'fs'
     # Go through each package and concatenate the file contents into one file
     for packageName, files of packages
       
-      # If there is a wildcard in the /**/* form of a file then remove it and
-      # splice in all files recursively in that directory
+      # Adjust files for wildcards
       for fileIndex, file of files
+        
+        # If there is a wildcard in the /**/* form of a file then remove it and
+        # splice in all files recursively in that directory
         if file? and file.indexOf('**/*') isnt -1
           root = file.split('**/*')[0]
           ext = file.split('**/*')[1]
@@ -28,6 +30,17 @@ fs = require 'fs'
             root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
             for file in fls
               newFiles.push(root + file) if file.match(new RegExp ext + '$')?
+          files.splice fileIndex, 1, newFiles...
+          
+        # If there is a wildcard in the /* form then remove it and splice in all the
+        # files one directory deep
+        else if file? and file.indexOf('/*') isnt -1
+          root = file.split('/*')[0]
+          ext = file.split('/*')[1]
+          newFiles = []
+          for file in fs.readdirSync(root)
+            if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')?
+              newFiles.push(root + '/' + file)
           files.splice fileIndex, 1, newFiles...
           
       # Concatenate the files
