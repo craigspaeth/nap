@@ -1,5 +1,5 @@
 # Module dependencies
-file = require 'file'
+fileUtil = require 'file'
 _ = require 'underscore'
 fs = require 'fs'
 
@@ -16,6 +16,20 @@ fs = require 'fs'
     
     # Go through each package and concatenate the file contents into one file
     for packageName, files of packages
+      
+      # If there is a wildcard in the /**/* form of a file then remove it and
+      # splice in all files recursively in that directory
+      for fileIndex, file of files
+        if file? and file.indexOf('**/*') isnt -1
+          root = file.split('**/*')[0]
+          ext = file.split('**/*')[1]
+          newFiles = []
+          fileUtil.walkSync root, (root, flds, fls) ->
+            root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
+            newFiles.push root + file for file in fls
+          files.splice fileIndex, 1, newFiles...
+          
+      # Concatenate the files
       concatFileStr = (fs.readFileSync(file).toString() for file in files).join '\n'
       
       # Run the concatenated files through each manipulator in order

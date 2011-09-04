@@ -2,7 +2,7 @@
 # TDD, Awesome documentation, Cakefile sweetness, Changelog, Branch versions (initially go crazy while in 0.0.x)
 # First set up asset packaging without minifying/compressing/image embedding/embedded fonts
 # Nap manipulators have logic that skips or fixes certain things depending on user-agents
-# Packages up anything not labeled 'manipulators' as .js, .css, or .jst
+# Packages up anything not labeled 'manipulators' as the extension
 
 @js =
   
