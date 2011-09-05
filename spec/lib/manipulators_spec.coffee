@@ -26,7 +26,11 @@ describe 'nap.compileCoffeescript', ->
   runAsync()
 
   it 'compiles coffeescript to js', ->
-    expect(nap.compileCoffeescript("foo = 'bar'").indexOf("var foo") isnt -1).toBeTruthy()
+    expect(nap.compileCoffeescript("foo = 'bar'", 'foo.coffee').indexOf("var foo") isnt -1).toBeTruthy()
+    done()
+    
+  it 'doesnt try to compile js', ->
+    expect(nap.compileCoffeescript("var foo = 'bar';", 'foo.js')).toEqual "var foo = 'bar';"
     done()
     
   it 'when run through package compiles coffeescript files to js', ->
@@ -42,7 +46,7 @@ describe 'nap.compileStylus', ->
   runAsync()
   
   it 'compiles stylus to css', ->
-    expect(nap.compileStylus("foo\n  background red").indexOf('background: #f00;') isnt -1).toBeTruthy()
+    expect(nap.compileStylus("foo\n  background red", 'foo.styl').indexOf('background: #f00;') isnt -1).toBeTruthy()
     done()
   
   it 'when run through package compiles stylus files to css', ->

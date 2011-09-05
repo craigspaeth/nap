@@ -4,27 +4,34 @@ _ = require 'underscore'
 fs = require 'fs'
 
 # Library of manipulator functions
-@compileCoffeescript = (file) -> require('coffee-script').compile(file)
-@compileStylus = (file) -> 
-  css = ''
-  require('stylus').render file, (err, out) -> throw err if err; css = out
-  css
-@packageJST = (file, path) ->
+@compileCoffeescript = (contents, filename) -> 
+  if filename? and filename.match(/.coffee$/)?
+    require('coffee-script').compile contents
+  else
+    contents
+@compileStylus = (contents, filename) ->
+  if filename? and filename.match(/.styl$/)?
+    css = ''
+    require('stylus').render contents, (err, out) -> throw err if err; css = out
+    css
+  else
+    contents
+@packageJST = (contents, filename) ->
   tmplDirname = 'templates/'
-  ext = _.last path.split('.')
-  escapedFile = file.replace(/\n+/g, '\\n').replace /"/g, '\\"'
-  if path.indexOf(tmplDirname) isnt -1
-    path = path.substr(path.indexOf(tmplDirname) + tmplDirname.length)
-  path = path.replace('.' + ext, '')
-  "window.JST[\"#{path}\"] = JSTCompile(\"#{escapedFile}\");"
-@ugilfyJS = (file) ->
+  ext = _.last filename.split('.')
+  escapedFile = contents.replace(/\n+/g, '\\n').replace /"/g, '\\"'
+  if filename? and filename.indexOf(tmplDirname) isnt -1
+    filename = filename.substr(filename.indexOf(tmplDirname) + tmplDirname.length)
+  filename = filename.replace('.' + ext, '')
+  "window.JST[\"#{filename}\"] = JSTCompile(\"#{escapedFile}\");"
+@ugilfyJS = (contents, filename) ->
   jsp = require("uglify-js").parser
   pro = require("uglify-js").uglify
-  ast = jsp.parse file
+  ast = jsp.parse contents
   ast = pro.ast_mangle(ast)
   ast = pro.ast_squeeze(ast)
   pro.gen_code(ast)
-@yuiCssMin = (file) -> require('../deps/yui_cssmin.js').minify file
+@yuiCssMin = (contents, filename) -> require('../deps/yui_cssmin.js').minify contents
   
 # Given a well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
@@ -57,7 +64,9 @@ splitAssetGroup = (group) ->
 
 # Given a package name and list of file names concatenate the files and run the given
 # manipulators in the order provided. Then output the concatenated package to the given directory.
-compilePackage = (name, files, dir, manipulators, options = { env: process.env.NODE_ENV || 'development' }) ->
+compilePackage = (name, files, dir, manipulators) ->
+  
+  env = process.env.NODE_ENV || 'development'
   
   # Adjust files for wildcards
   for fileIndex, file of files
@@ -90,16 +99,16 @@ compilePackage = (name, files, dir, manipulators, options = { env: process.env.N
 
   # Run any pre manipulators on each of the files
   for i, file of files
-    if manipulators? and manipulators.pre? and manipulators.pre[options.env]?
-      for manipulator in manipulators.pre[options.env]
+    if manipulators? and manipulators.pre? and manipulators.pre[env]?
+      for manipulator in manipulators.pre[env]
         fileStrs[i] = manipulator(fileStrs[i], file)
 
   # Concatenate the files
   concatFileStr = (file for file in fileStrs).join '\n'
 
   # Run any post manipulators on the concatenated file
-  if manipulators? and manipulators.post? and manipulators.post[options.env]?
-    for manipulator in manipulators.post[options.env]
+  if manipulators? and manipulators.post? and manipulators.post[env]?
+    for manipulator in manipulators.post[env]
       concatFileStr = manipulator(concatFileStr)
 
   fs.writeFileSync "#{dir}/#{name}", concatFileStr
