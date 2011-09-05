@@ -2,7 +2,7 @@
 # TDD, Awesome documentation, Cakefile sweetness, Changelog, Branch versions (initially go crazy while in 0.0.x)
 # First set up asset packaging without minifying/compressing/image embedding/embedded fonts
 # Nap manipulators have logic that skips or fixes certain things depending on user-agents (which means being able to put together
-# various packages for things like embedded images)
+# various packages for things like embedded images, or embedding CSS conditionals?)
 # Packages up anything not labeled as one of the manipulators
 # Scaffolding command line tool. e.g. 
 #     $ nap init
