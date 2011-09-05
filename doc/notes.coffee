@@ -1,13 +1,14 @@
 # MIT Liscense
 # TDD, Awesome documentation, Cakefile sweetness, Changelog, Branch versions (initially go crazy while in 0.0.x)
 # First set up asset packaging without minifying/compressing/image embedding/embedded fonts
-# Nap manipulators have logic that skips or fixes certain things depending on user-agents
+# Nap manipulators have logic that skips or fixes certain things depending on user-agents (which means being able to put together
+# various packages for things like embedded images)
 # Packages up anything not labeled as one of the manipulators
 # Scaffolding command line tool. e.g. 
 #     $ nap init
 #     $ what javascript language are you using? 1. coffeescript, 2. none
 #     $ what stylsheet language are you using? 1. stylus, 2. sass, 3. none
-#     $ what JST language are you using? 1. jade, 2. haml.js, 3. jqtmpl, 4. mustache, 5. no JSTs
+#     $ are you using JSTs [yes || no]?
 #     $ would you like to output in coffeescript or javascript? 1. coffescript, 2. javascript
 #     $ Thank you! assets.coffee has been compiled in the current directory.
 # 

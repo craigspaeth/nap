@@ -84,3 +84,19 @@ describe 'nap.package', ->
       nap.package require('../stubs/assets_stub8.coffee'), 'spec/fixtures/assets'
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';\nvar bar = 'bar';qux"
       done()
+      
+describe 'nap.watch', ->
+  
+  runAsync()
+  
+  it 'regenerates a package when a file is changed', ->
+    file = 'spec/fixtures/watch_js/foo.js'
+    fs.writeFile 'spec/fixtures/assets/watch.js', ''
+    fs.writeFileSync file, 'var foo = \'foo\''
+    nap.watch require('../stubs/assets_stub9.coffee'), 'spec/fixtures/assets'
+    fs.writeFileSync file, "Hello World"
+    fs.watchFile file, (curr, prev) ->
+      expect(fs.readFileSync('spec/fixtures/assets/watch.js').toString()).toEqual "Hello World"
+      done()
+    
+    
