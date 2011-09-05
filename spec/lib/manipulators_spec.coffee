@@ -48,6 +48,10 @@ describe 'nap.compileStylus', ->
   it 'compiles stylus to css', ->
     expect(nap.compileStylus("foo\n  background red", 'foo.styl').indexOf('background: #f00;') isnt -1).toBeTruthy()
     done()
+    
+  it 'doesnt try to compile non stylus', ->
+    expect(nap.compileStylus(".foo { background red; }", 'foo.css')).toEqual ".foo { background red; }"
+    done()
   
   it 'when run through package compiles stylus files to css', ->
     process.env.NODE_ENV = 'development'
