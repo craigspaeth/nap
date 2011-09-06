@@ -98,9 +98,8 @@ describe 'nap.prependJST', ->
     expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf 'window.JST = {}').toNotEqual -1
     done()
     
-  it 'inserts a JSTCompile function that throws an error b/c its meant to be overidden', ->
-    msg = 'You must override JSTCompile with your own template compiler function.'
-    str = "window.JSTCompile = function() { throw new Error('#{msg}'}) };"
+  it 'inserts an empty JSTCompile function', ->
+    str = "if(typeof window.JSTCompile !== 'function') { throw new Error('You must provide a JSTCompile function.') };"
     expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf str).toNotEqual -1
     done()
     

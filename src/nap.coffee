@@ -30,8 +30,7 @@ fs = require 'fs'
 # Post-manipulators
 @prependJST = (contents, filename) ->
   str = 'window.JST = {};\n'
-  msg = 'You must override JSTCompile with your own template compiler function.'
-  str += "window.JSTCompile = function() { throw new Error('#{msg}'}) };\n"
+  str += "if(typeof window.JSTCompile !== 'function') { throw new Error('You must provide a JSTCompile function.') };\n"
   str + contents
 @ugilfyJS = (contents, filename) ->
   jsp = require("uglify-js").parser
