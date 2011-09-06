@@ -28,10 +28,11 @@ fs = require 'fs'
   "window.JST[\"#{filename}\"] = JSTCompile(\"#{escapedFile}\");\n"
 
 # Post-manipulators
-@prependJST = (contents, filename) ->
-  str = 'window.JST = {};\n'
-  str += "if(typeof window.JSTCompile !== 'function') { throw new Error('You must provide a JSTCompile function.') };\n"
-  str + contents
+@prependJST = (compilerFunctionStr) -> 
+  return (contents, filename) ->
+    str = 'window.JST = {};\n'
+    str += "window.JSTCompile = #{compilerFunctionStr};\n"
+    str + contents
 @ugilfyJS = (contents, filename) ->
   jsp = require("uglify-js").parser
   pro = require("uglify-js").uglify
@@ -58,6 +59,7 @@ fs = require 'fs'
     for packageName, files of splitAssetGroup(keys).packages
       for file in files
         fs.watchFile file, (curr, prev) ->
+          console.log "Found change in #{file}, compiling #{packageName + '.' + extension}"
           compilePackage packageName + '.' + extension, files, dir, splitAssetGroup(keys).manipulators
         
 # Given an asset group split up it's packages and manipulators
@@ -115,16 +117,16 @@ compilePackage = (name, files, dir, manipulators) ->
 
   # Run any pre manipulators on each of the files
   for i, file of files
-    if manipulators? and manipulators.pre? and manipulators.pre[env]?
-      for manipulator in manipulators.pre[env]
+    if manipulators? and manipulators.pre? and (manipulators.pre[env]? or manipulators.pre['*']?)
+      for manipulator in (manipulators.pre[env] ? manipulators.pre['*'])
         fileStrs[i] = manipulator(fileStrs[i], file)
 
   # Concatenate the files
   concatFileStr = (file for file in fileStrs).join '\n'
 
   # Run any post manipulators on the concatenated file
-  if manipulators? and manipulators.post? and manipulators.post[env]?
-    for manipulator in manipulators.post[env]
+  if manipulators? and manipulators.post? and (manipulators.post[env]? or manipulators.post['*']?)
+    for manipulator in (manipulators.post[env] ? manipulators.post['*'])
       concatFileStr = manipulator(concatFileStr)
 
   fs.writeFileSync "#{dir}/#{name}", concatFileStr

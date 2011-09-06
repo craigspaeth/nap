@@ -7,14 +7,12 @@
 # 
 @js =
   
-  manipulators:
-    'development': 
-      preManipulate: [nap.compileCoffeescript]
-    'production': 
-      preManipulate: [nap.compileCoffeescript]
-      postManipulate: [nap.uglifyJS, nap.gzip]
+  preManipulate: 
+    '*': [nap.compileCoffeescript]
+  postManipulate: 
+    'production': [nap.uglifyJS, nap.gzip]
   
-  vendor: ['app/client/vendor/*.js']
+  vendor: ['app/client/vendor/**/*.js']
 
   backbone: [
     'app/client/models/**/*.coffee'
@@ -24,12 +22,12 @@
   ] 
 
 @css =
-  
-  manipulators:
-    'development': 
-      postManipulate: [nap.compileStylus]
-    'production': 
-      postManipulate: [nap.compileStylus, nap.embedImages, nap.embedFonts, nap.yuiCompressor, nap.gzip]
+ 
+  preManipulate: 
+    '*': [nap.compileStylus] 
+  postManipulate: 
+    '*': [nap.embedImages, nap.embedFonts]
+    'production': [nap.yuiCompressor, nap.gzip]
   
   splash: [
     'app/stylesheets/splash.stylus'
@@ -37,13 +35,12 @@
   ]
   
 @jst =
-  
-  manipulators: 
-    'development': 
-      preManipulate: [nap.packageJSTs]
-    'production':
-      preManipulate: [nap.packageJSTs]
-      postManipulate: [nap.gzip]
+   
+  preManipulate: 
+    '*': [nap.packageJST]
+  postManipulate:
+    '*': [nap.prependJST('Jade')]
+    'production': [nap.gzip]
     
   all: ['app/templates/**/*.jade']
 

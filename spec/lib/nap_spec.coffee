@@ -80,6 +80,12 @@ describe 'nap.package', ->
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';bar\nvar bar = 'bar';bar"
       done()
       
+    it 'runs the manipulator function on the concatenated files regardless of env if provided a wildcard', ->
+      process.env.NODE_ENV = 'foo'
+      nap.package require('../stubs/assets_stub10.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';foo\nvar bar = 'bar';foo"
+      done()
+      
   describe 'given a postManipulate', ->
   
     runAsync()

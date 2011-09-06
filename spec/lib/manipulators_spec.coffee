@@ -94,11 +94,16 @@ describe 'nap.prependJST', ->
 
   runAsync()
   
-  it 'prepends a window JST object', ->
+  it 'returns a function that prepends a JST object and the provided Compile function', ->
+    expect(nap.prependJST('Jade')('foo').indexOf 'window.JST = {}').toNotEqual -1
+    expect(nap.prependJST('Jade')('foo').indexOf 'window.JSTCompile = Jade').toNotEqual -1
+    done()
+  
+  xit 'prepends a window JST object', ->
     expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf 'window.JST = {}').toNotEqual -1
     done()
     
-  it 'inserts an empty JSTCompile function', ->
+  xit 'inserts an empty JSTCompile function', ->
     str = "if(typeof window.JSTCompile !== 'function') { throw new Error('You must provide a JSTCompile function.') };"
     expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf str).toNotEqual -1
     done()

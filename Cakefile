@@ -1,3 +1,5 @@
+exec = require('child_process').exec
+
 task 'build', 'src/ --> lib/', ->
   # .coffee --> .js
   exec 'coffee -co lib src', (err, stdout, stderr) ->
