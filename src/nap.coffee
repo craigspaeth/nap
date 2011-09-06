@@ -4,6 +4,8 @@ _ = require 'underscore'
 fs = require 'fs'
 
 # Library of manipulator functions
+
+# Pre-manipulators
 @compileCoffeescript = (contents, filename) -> 
   if filename? and filename.match(/.coffee$/)?
     require('coffee-script').compile contents
@@ -15,7 +17,7 @@ fs = require 'fs'
     require('stylus').render contents, (err, out) -> throw err if err; css = out
     css
   else
-    contents
+    contents 
 @packageJST = (contents, filename) ->
   tmplDirname = 'templates/'
   ext = _.last filename.split('.')
@@ -23,7 +25,14 @@ fs = require 'fs'
   if filename? and filename.indexOf(tmplDirname) isnt -1
     filename = filename.substr(filename.indexOf(tmplDirname) + tmplDirname.length)
   filename = filename.replace('.' + ext, '')
-  "window.JST[\"#{filename}\"] = JSTCompile(\"#{escapedFile}\");"
+  "window.JST[\"#{filename}\"] = JSTCompile(\"#{escapedFile}\");\n"
+
+# Post-manipulators
+@prependJST = (contents, filename) ->
+  str = 'window.JST = {};\n'
+  msg = 'You must override JSTCompile with your own template compiler function.'
+  str += "window.JSTCompile = function() { throw new Error('#{msg}'}) };\n"
+  str + contents
 @ugilfyJS = (contents, filename) ->
   jsp = require("uglify-js").parser
   pro = require("uglify-js").uglify
@@ -69,32 +78,40 @@ compilePackage = (name, files, dir, manipulators) ->
   env = process.env.NODE_ENV || 'development'
   
   # Adjust files for wildcards
-  for fileIndex, file of files
-  
-    # If there is a wildcard in the /**/* form of a file then remove it and
-    # splice in all files recursively in that directory
-    if file? and file.indexOf('**/*') isnt -1
-      root = file.split('**/*')[0]
-      ext = file.split('**/*')[1]
-      newFiles = []
-      fileUtil.walkSync root, (root, flds, fls) ->
-        root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
-        for file in fls
-          newFiles.push(root + file) if file.match(new RegExp ext + '$')?
-      files.splice fileIndex, 1, newFiles...
+  hasWildcards = ->
+    for file in files
+      return true if file.indexOf('/*') isnt -1
+    false
+  while hasWildcards()
     
-    # If there is a wildcard in the /* form then remove it and splice in all the
-    # files one directory deep
-    else if file? and file.indexOf('/*') isnt -1
-      root = file.split('/*')[0]
-      ext = file.split('/*')[1]
-      newFiles = []
-      for file in fs.readdirSync(root)
-        if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')?
-          newFiles.push(root + '/' + file)
-      files.splice fileIndex, 1, newFiles...
+    for fileIndex, file of files
+    
+      # If there is a wildcard in the /**/* form of a file then remove it and
+      # splice in all files recursively in that directory
+      if file? and file.indexOf('**/*') isnt -1
+        root = file.split('**/*')[0]
+        ext = file.split('**/*')[1]
+        newFiles = []
+        fileUtil.walkSync root, (root, flds, fls) ->
+          root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
+          for file in fls
+            if file.match(new RegExp ext + '$')? and _.indexOf(files, root + file) is -1
+              newFiles.push(root + file)
+        files.splice(fileIndex, 1, newFiles...)
+    
+      # If there is a wildcard in the /* form then remove it and splice in all the
+      # files one directory deep
+      if file? and file.indexOf('/*') isnt -1 and file.indexOf('**/*') is -1
+        root = file.split('/*')[0]
+        ext = file.split('/*')[1]
+        newFiles = []
+        for file in fs.readdirSync(root)
+          if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')? and _.indexOf(files, root + '/' + file) is -1
+            newFiles.push(root + '/' + file)
+        files.splice(fileIndex, 1, newFiles...)
 
   # Map files contents
+  # console.log files
   fileStrs = (fs.readFileSync(file).toString() for file in files)
 
   # Run any pre manipulators on each of the files

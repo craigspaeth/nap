@@ -61,34 +61,47 @@ describe 'nap.compileStylus', ->
     expect(contents.indexOf("background: #00f;") isnt -1).toBeTruthy()
     done()
     
-describe 'nap.packageJSTs', ->
+describe 'nap.packageJST', ->
   
   runAsync()
   
   it 'packs files into JST[path/to/file] = JSTCompile(fileContents)', ->
-    expect(nap.packageJST('h1 Hello World', 'path/to/index.jade')).toEqual(
-      'window.JST["path/to/index"] = JSTCompile("h1 Hello World");'
-    )
+    str = 'window.JST["path/to/index"] = JSTCompile("h1 Hello World");'
+    expect(nap.packageJST('h1 Hello World', 'path/to/index.jade').indexOf str).toNotEqual -1
     done()
     
   it 'packs templates in relative dirs to the templates folder', ->
-    expect(nap.packageJST('h1 Hello World', 'path/to/templates/foo/index.jade')).toEqual(
+    expect(nap.packageJST('h1 Hello World', 'path/to/templates/foo/index.jade').indexOf(
       'window.JST["foo/index"] = JSTCompile("h1 Hello World");'
-    )
+    )).toNotEqual -1
     done()
 
   it "escapes newline characters", ->
     str = "h1 Hello World\nh2 Can I haz cheezeburger?\n"
-    expect(nap.packageJST(str, 'path/to/templates/foo/index.jade')).toEqual(
+    expect(nap.packageJST(str, 'path/to/templates/foo/index.jade').indexOf(
       'window.JST["foo/index"] = JSTCompile(\"h1 Hello World\\nh2 Can I haz cheezeburger?\\n\");'
-    )
+    )).toNotEqual -1
     done()
 
   it "escapes double quotes characters", ->
     str = 'h1 "Hello World"'
-    expect(nap.packageJST(str, 'path/to/templates/foo/index.jade')).toEqual(
+    expect(nap.packageJST(str, 'path/to/templates/foo/index.jade').indexOf(
       'window.JST["foo/index"] = JSTCompile(\"h1 \\\"Hello World\\\"\");'
-    )
+    )).toNotEqual -1
+    done()
+    
+describe 'nap.prependJST', ->
+
+  runAsync()
+  
+  it 'prepends a window JST object', ->
+    expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf 'window.JST = {}').toNotEqual -1
+    done()
+    
+  it 'inserts a JSTCompile function that throws an error b/c its meant to be overidden', ->
+    msg = 'You must override JSTCompile with your own template compiler function.'
+    str = "window.JSTCompile = function() { throw new Error('#{msg}'}) };"
+    expect(nap.prependJST('h1 Hello World', 'path/to/index.jade').indexOf str).toNotEqual -1
     done()
     
 describe 'nap.ugilfyJS', ->

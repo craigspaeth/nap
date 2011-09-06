@@ -24,35 +24,46 @@ describe 'nap.package', ->
     expect(fs.readFileSync('spec/fixtures/assets/bar.js').toString()).toEqual "var bar = 'bar';"
     done()
     
-  it 'takes wildcards in the /path/to/**/* form and splices them in place', ->
-    nap.package require('../stubs/assets_stub4.coffee'), 'spec/fixtures/assets'
-    expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
-      "var foo = 'foo';\nbar2 = 'bar2'\nvar foo1 = 'foo1';\nvar foo2 = 'foo2';\nvar foo3 = 'foo3';\nvar bar = 'bar';"
-    )
-    done()
+  describe 'using wild cards', ->
+  
+    runAsync()
     
-  it 'takes wildcards in the /path/to/**/*.js form and splices them in place, excluding the wrong extension', ->
-    nap.package require('../stubs/assets_stub5.coffee'), 'spec/fixtures/assets'
-    expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
-      "var foo = 'foo';\nvar foo1 = 'foo1';\nvar foo2 = 'foo2';\nvar foo3 = 'foo3';\nvar bar = 'bar';"
-    )
-    done()
+    it 'takes wildcards in the /path/to/**/* form and splices them in place', ->
+      nap.package require('../stubs/assets_stub4.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
+        "var foo = 'foo';\nbar2 = 'bar2'\nvar foo1 = 'foo1';\nvar foo2 = 'foo2';\nvar foo3 = 'foo3';\nvar bar = 'bar';"
+      )
+      done()
     
-  it 'takes wildcards in the /* form and splices them in place, going only one directory deep', ->
-    nap.package require('../stubs/assets_stub6.coffee'), 'spec/fixtures/assets'
-    expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
-      "var foo = 'foo';\nbar2 = 'bar2'\nvar foo1 = 'foo1';\nvar bar = 'bar';"
-    )
-    done()
+    it 'takes wildcards in the /path/to/**/*.js form and splices them in place, excluding the wrong extension', ->
+      nap.package require('../stubs/assets_stub5.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
+        "var foo = 'foo';\nvar foo1 = 'foo1';\nvar foo2 = 'foo2';\nvar foo3 = 'foo3';\nvar bar = 'bar';"
+      )
+      done()
     
-  it 'takes wildcards in the /*.js form and splices them in place, going only one directory deep,
-      and excluding the wrong extension', ->
-    nap.package require('../stubs/assets_stub7.coffee'), 'spec/fixtures/assets'
-    expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
-      "var foo = 'foo';\nvar foo1 = 'foo1';\nvar bar = 'bar';"
-    )
-    done()
+    it 'takes wildcards in the /* form and splices them in place, going only one directory deep', ->
+      nap.package require('../stubs/assets_stub6.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
+        "var foo = 'foo';\nbar2 = 'bar2'\nvar foo1 = 'foo1';\nvar bar = 'bar';"
+      )
+      done()
     
+    it 'takes wildcards in the /*.js form and splices them in place, going only one directory deep,
+        and excluding the wrong extension', ->
+      nap.package require('../stubs/assets_stub7.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual(
+        "var foo = 'foo';\nvar foo1 = 'foo1';\nvar bar = 'bar';"
+      )
+      done()
+      
+    it 'doesnt add files already specified', ->
+      nap.package require('../stubs/assets_stub1.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/foo.css').toString()).toEqual(
+        ".foo { background: red; }"
+      )
+      done()
+      
   describe 'given a preManipulate', ->
   
     runAsync()
