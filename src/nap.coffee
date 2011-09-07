@@ -57,10 +57,14 @@ fs = require 'fs'
   # Put a watcher on every file. If that file changes, compile it's package
   for extension, keys of assets
     for packageName, files of splitAssetGroup(keys).packages
+      files = replaceWildcards files
       for file in files
-        fs.watchFile file, (curr, prev) ->
-          console.log "Found change in #{file}, compiling #{packageName + '.' + extension}"
+        compileFile = (curr, prev) ->
+          # return if curr.mtime.getTime() is prev.mtime.getTime()
+          console.log "Found change in #{@}, compiling #{packageName + '.' + extension}"
           compilePackage packageName + '.' + extension, files, dir, splitAssetGroup(keys).manipulators
+        fs.watchFile file, _.bind compileFile, file
+          
         
 # Given an asset group split up it's packages and manipulators
 splitAssetGroup = (group) ->
@@ -72,11 +76,8 @@ splitAssetGroup = (group) ->
   delete packages['postManipulate']
   packages: packages, manipulators: manipulators
 
-# Given a package name and list of file names concatenate the files and run the given
-# manipulators in the order provided. Then output the concatenated package to the given directory.
-compilePackage = (name, files, dir, manipulators) ->
-  
-  env = process.env.NODE_ENV || 'development'
+# Given a list of file strings, replaces the wild cards with the appropriate matches
+replaceWildcards = (files) ->
   
   # Adjust files for wildcards
   hasWildcards = ->
@@ -102,7 +103,7 @@ compilePackage = (name, files, dir, manipulators) ->
     
       # If there is a wildcard in the /* form then remove it and splice in all the
       # files one directory deep
-      if file? and file.indexOf('/*') isnt -1 and file.indexOf('**/*') is -1
+      else if file? and file.indexOf('/*') isnt -1
         root = file.split('/*')[0]
         ext = file.split('/*')[1]
         newFiles = []
@@ -110,9 +111,18 @@ compilePackage = (name, files, dir, manipulators) ->
           if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')? and _.indexOf(files, root + '/' + file) is -1
             newFiles.push(root + '/' + file)
         files.splice(fileIndex, 1, newFiles...)
+  
+  files
+  
+# Given a package name and list of file names concatenate the files and run the given
+# manipulators in the order provided. Then output the concatenated package to the given directory.
+compilePackage = (name, files, dir, manipulators) ->
+  
+  env = process.env.NODE_ENV || 'development'
+  
+  files = replaceWildcards files
 
   # Map files contents
-  # console.log files
   fileStrs = (fs.readFileSync(file).toString() for file in files)
 
   # Run any pre manipulators on each of the files

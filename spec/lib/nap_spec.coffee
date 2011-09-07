@@ -114,6 +114,15 @@ describe 'nap.watch', ->
     fs.writeFileSync file, "Hello World"
     fs.watchFile file, (curr, prev) ->
       expect(fs.readFileSync('spec/fixtures/assets/watch.js').toString()).toEqual "Hello World"
+      fs.unwatchFile file
       done()
-    
-    
+      
+  it 'watches for files caught by wildcards too', ->
+    file = 'spec/fixtures/watch_js/foo.js'
+    fs.writeFile 'spec/fixtures/assets/watch.js', ''
+    fs.writeFileSync file, 'var foo = \'foo\''
+    nap.watch require('../stubs/assets_stub11.coffee'), 'spec/fixtures/assets'
+    fs.writeFileSync file, "Hello Mars"
+    fs.watchFile file, (curr, prev) ->
+      expect(fs.readFileSync('spec/fixtures/assets/watch.js').toString()).toEqual "Hello Mars"
+      done()

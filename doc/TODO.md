@@ -2,6 +2,4 @@
 * Embed images manipulator
 * Embed fonts manipulator
 * Gracefully degrading packages using helpers to detect user-agents
-* Have nap clear the directory
-* Run through setting this up on a project without reading any docs and provide logical error messages
-* Ability to pass options including env and defaultManipulators
+* Two bugs in watching: console logs only the last file, and it doesn't work for wildcards 
