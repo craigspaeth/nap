@@ -8,14 +8,6 @@ Compiling, packaging, minifying, and compressing your client side assets got you
 
 ## Example
 
-This example...
-
-* Compiles coffeescripts in various folders, merges & minifies the outputted js with uglifyJS
-* Compiles stylus in `app/stylesheets` dir, merges blueprint.css with the compiled stylus, and finally minifies the result with YUI.
-* Packages two jade templates similar to how Jammit does, using the jade client side compiler function when called (See _manipulators_ below).
-* Outputs backbone.js, all.css, and template.jst package files to `public/assets` once in _production_
-* Watches for any file changes in any of the packages, and recompiles that package in _development_ 
-
 ````coffeescript
 nap = require 'nap'
 
@@ -59,6 +51,23 @@ switch process.env.NODE_ENV
   when 'production' then nap.package assets, 'public/assets'
   when 'development'then nap.watch assets, 'public/assets'
 ````
+
+Then simply reference your packages in your layout
+
+````html
+<script type='text/javascript' src='assets/backbone.js'>
+<link rel="stylesheet" type="text/css" href="assets/all.css" />
+<script type='text/javascript' src='assets/templates.jst'>
+````
+
+This example...
+
+* Compiles coffeescripts in various folders, merges & minifies the outputted js with uglifyJS
+* Compiles stylus in `app/stylesheets` dir, merges blueprint.css with the compiled stylus, and finally minifies the result with YUI.
+* Packages two jade templates similar to how Jammit does, using the jade client side compiler function when called (See _manipulators_ below).
+* Outputs backbone.js, all.css, and template.jst package files to `public/assets` once in _production_
+* Watches for any file changes in any of the packages, and recompiles that package in _development_ 
+
 
 ## Installation
 
@@ -143,16 +152,7 @@ assets =
       'app/templates/footer.jade'
     ]
 ````
-      
-Now you can simply reference any of your compiled packages in your layout.
 
-````html
-<script type='text/javascript' src='assets/vendor.js'>
-<script type='text/javascript' src='assets/templates.jst'>
-<script type='text/javascript' src='assets/backbone_coffeescripts.js'>
-<link rel="stylesheet" type="text/css" href="assets/all.css" />
-````
-    
 ## Explaining the asset object
 
 The assets object consists of a couple layers. First level is the package extensions. (_.js_, _.css_, and _.jst_) These simply determine the package file extensions and groups packages and manipulators together. Inside an extension you can specify keys preManipulate, postManipulate, and from then on each key describes a package.
