@@ -6,6 +6,10 @@ Compiling, packaging, minifying, and compressing your client side assets got you
 
 (nap) Node Asset Packager is a module inspired by [Jammit](http://documentcloud.github.com/jammit/) and [Connect Asset Manager](https://github.com/mape/connect-assetmanager) that helps compile and package your assets including stylesheets, javascripts, and javascript templates.
 
+## Installation
+
+    $ npm install nap
+
 ## Example
 
 ````coffeescript
@@ -70,11 +74,6 @@ This example...
 * Packages two jade templates similar to how Jammit does, using the jade client side compiler function when called (See _manipulators_ below).
 * Outputs backbone.js, all.css, and template.jst package files to `public/assets` once in _production_
 * Watches for any file changes in any of the packages, and recompiles that package in _development_ 
-
-
-## Installation
-
-    $ npm install nap
     
 ## Explaining nap
 
@@ -264,16 +263,3 @@ Used in conjunction with nap.packageJST to determine what client-side javascript
 nap uses [Jasmine-node](https://github.com/mhevery/jasmine-node) for testing. Simply run the jasmine-node command with the coffeescript flag
 
     jasmine-node spec --coffee
-    
-
-## License
-
-(The MIT License)
-
-Copyright (c) 2009-2010 Craig Spaeth <craigspaeth@gmail.com>
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

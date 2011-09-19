@@ -84,6 +84,7 @@ replaceWildcards = (files) ->
     for file in files
       return true if file.indexOf('/*') isnt -1
     false
+  
   while hasWildcards()
     
     for fileIndex, file of files
