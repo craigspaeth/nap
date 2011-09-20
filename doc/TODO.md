@@ -6,4 +6,3 @@
 * Examples folder
 * Break out manipulators into their own file
 * Default manipulators via file extension
-* Refactor watching using sentry

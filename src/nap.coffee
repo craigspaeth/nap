@@ -13,7 +13,7 @@ sentry = require 'sentry'
 @package = (assets, dir) ->
   for extension, keys of assets
     for packageName, files of splitAssetGroup(keys).packages
-      compilePackage packageName + '.' + extension, files, dir, splitAssetGroup(keys).manipulators
+      compilePackage packageName + '.' + extension, replaceWildcards(files), dir, splitAssetGroup(keys).manipulators
 
 # Given a well formatted assets object, package will watch for any file changes in the
 # one of the packages and re-compile that package.
@@ -22,14 +22,10 @@ sentry = require 'sentry'
   # Put a watcher on every file. If that file changes, compile it's package
   for extension, keys of assets
     for packageName, files of splitAssetGroup(keys).packages
-      files = replaceWildcards files
       for file in files
-        compileFile = (curr, prev) ->
-          # return if curr.mtime.getTime() is prev.mtime.getTime()
-          console.log "Found change in #{@}, compiling #{packageName + '.' + extension}"
-          compilePackage packageName + '.' + extension, files, dir, splitAssetGroup(keys).manipulators
-        fs.watchFile file, _.bind compileFile, file
-          
+        sentry.watch file, (filename) ->
+          console.log "Found change in package #{packageName + '.' + extension}, compiling"
+          compilePackage packageName + '.' + extension, replaceWildcards(files), dir, splitAssetGroup(keys).manipulators
         
 # Given an asset group split up it's packages and manipulators
 splitAssetGroup = (group) ->
@@ -53,8 +49,6 @@ replaceWildcards = (files) ->
 compilePackage = (name, files, dir, manipulators) ->
   
   env = process.env.NODE_ENV || 'development'
-  
-  files = replaceWildcards files
 
   # Map files contents
   fileStrs = (fs.readFileSync(file).toString() for file in files)
@@ -72,5 +66,6 @@ compilePackage = (name, files, dir, manipulators) ->
   if manipulators? and manipulators.post? and (manipulators.post[env]? or manipulators.post['*']?)
     for manipulator in (manipulators.post[env] ? manipulators.post['*'])
       concatFileStr = manipulator(concatFileStr)
-
+  
+  # Finally write the package to the directory
   fs.writeFileSync "#{dir}/#{name}", concatFileStr
