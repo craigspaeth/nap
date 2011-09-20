@@ -15,6 +15,7 @@
   "dependencies": {
     "underscore": "*",
     "coffee-script": "*",
+    "sentry": "*",
     "stylus": "*",
     "uglify-js": "*"
   },
