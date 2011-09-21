@@ -2,6 +2,7 @@ require '../helpers/spec_helper.coffee'
 nap = require '../../src/nap.coffee'
 fs = require 'fs'
 _ = require 'underscore'
+knox = require ('knox')
 
 describe 'nap.package', ->
   
@@ -24,6 +25,19 @@ describe 'nap.package', ->
     expect(fs.readFileSync('spec/fixtures/assets/bar.js').toString()).toEqual "var bar = 'bar';"
     done()
     
+  it 'returns the file paths of the packages', ->
+    package = nap.package require('../stubs/assets_stub3.coffee'), 'spec/fixtures/assets'
+    assert = ['spec/fixtures/assets/foo.js', 'spec/fixtures/assets/bar.js', 'spec/fixtures/assets/foo.css']
+    equal = _.isEqual package, assert
+    expect(equal).toBeTruthy()
+    done()
+    
+  it 'can be passed a env in options to emulate an environemnt', ->
+    nap.package require('../stubs/assets_stub2.coffee'), 'spec/fixtures/assets',
+      env: 'production'
+    expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';bar\nvar bar = 'bar';bar"
+    done()
+  
   describe 'using wild cards', ->
   
     runAsync()
@@ -121,8 +135,31 @@ describe 'nap.watch', ->
     file = 'spec/fixtures/watch_js/foo.js'
     fs.writeFile 'spec/fixtures/assets/watch.js', ''
     fs.writeFileSync file, 'var foo = \'foo\''
-    nap.watch require('../stubs/assets_stub11.coffee'), 'spec/fixtures/assets'
+    nap.watch require('../stubs/assets_stub12.coffee'), 'spec/fixtures/assets'
     fs.writeFileSync file, "Hello Mars"
     fs.watchFile file, (curr, prev) ->
       expect(fs.readFileSync('spec/fixtures/assets/watch.js').toString()).toEqual "Hello Mars"
+      done()
+
+s3Opts = JSON.parse(fs.readFileSync(__rootdir + '/.s3auth').toString())
+s3Opts.dir = '/assets'
+knoxClient = knox.createClient
+  key: s3Opts.key
+  secret: s3Opts.secret
+  bucket: s3Opts.bucket  
+
+describe 'nap.packageToS3', ->
+  
+  runAsync()
+  
+  it 'sends a package to S3 given the proper options', ->
+    nap.packageToS3 require('../stubs/assets_stub11.coffee'), 'spec/fixtures/assets', s3Opts, ->
+      knoxClient.getFile '/assets/bar.js', (err, res) ->
+        res.on 'data', (chunk) ->
+          expect(chunk.toString()).toEqual "var foo = 'foo';\nvar bar = 'bar';"
+          done()
+      
+  it 'callsback with an array of package urls from the packages', ->
+    nap.packageToS3 require('../stubs/assets_stub.coffee'), 'spec/fixtures/assets', s3Opts, (packages) ->
+      expect(packages[0].match /^http.*foo\.js$/).toBeTruthy()
       done()

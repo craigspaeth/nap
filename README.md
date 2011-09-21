@@ -87,6 +87,13 @@ nap.package assets, 'public/assets'
 
 # Watches for file changes on a specific file and only re-compiles that package
 nap.watch assets, 'output/path/of/choice'
+
+# Packages files to public/assets and then pushes to to the assets folder in the my-bucket S3 bucket
+nap.watch assets, 'public/assets',
+  key: "KEY"
+  secret: "SECRET"
+  bucket:"my-bucket"
+  dir: "assets"
 ````
 
 ## Examples of nap asset objects
@@ -259,6 +266,14 @@ Runs the YUI css compressor on the merged files
 Used in conjunction with nap.packageJST to determine what client-side javascript template compiler function you want to use. Pass the function name as a string. e.g. `nap.prependJST('Haml')` or `nap.prependJST('Mustache.to_html')`
       
 ## To run tests
+
+You must first have a test S3 bucket and create a `.s3auth` file in the root directory and add s3 credentials in JSON format like so:
+
+    {"key":"foo",
+     "secret":"bar",
+     "bucket":"baz"}
+     
+This is to test nap's packageToS3 function.
 
 nap uses [Jasmine-node](https://github.com/mhevery/jasmine-node) for testing. Simply run the jasmine-node command with the coffeescript flag
 

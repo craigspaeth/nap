@@ -54,6 +54,10 @@ nap.watch assets, 'public/assets'
 
 # For production I want to package the assets and push them to a CDN.
 # Attach this hook in a cake task, or git hook. Whatever runs when something
-# is 'pushed to production'. This will package the assets, delete the old assets, and upload
-# the new ones.
-nap.packageToS3 assets, 'public/assets' #, S3INFO
+# is 'pushed to production'. This will package the assets, and upload
+# the new ones. (directory is optional, it will assume the same directory provided)
+nap.packageToS3 assets, '/assets',
+  key: 'key'
+  secret: 'secret'
+  bucket: 'bucket'
+  dir: '/assets'

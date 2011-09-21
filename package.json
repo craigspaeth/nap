@@ -17,7 +17,8 @@
     "coffee-script": "*",
     "sentry": ">= 0.1.2",
     "stylus": "*",
-    "uglify-js": "*"
+    "uglify-js": "*",
+    "knox": "*"
   },
   "devDependencies": {
     "jasmine-node": "*"
