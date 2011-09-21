@@ -5,7 +5,7 @@ fs = require 'fs'
 sentry = require 'sentry'
 
 # Attach manipulators to nap
-@[name] = fn for name, fn of require('./manipulators.coffee')
+@[name] = fn for name, fn of require(__dirname + '/manipulators')
 
 # Given a well formatted assets object, package will concatenate the files and 
 # run manipulators in the order provided. Then output the concatenated package
