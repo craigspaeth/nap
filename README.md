@@ -88,7 +88,7 @@ nap.package assets, 'public/assets'
 # Watches for file changes on a specific file and only re-compiles that package
 nap.watch assets, 'output/path/of/choice'
 
-# Packages files to public/assets and then pushes to to the 'assets' folder in the 'my-bucket'' S3 bucket
+# Packages files to public/assets and then pushes to to the 'gassets' folder in the 'my-bucket'' S3 bucket
 nap.watch assets, 'public/assets',
   key: "KEY"
   secret: "SECRET"

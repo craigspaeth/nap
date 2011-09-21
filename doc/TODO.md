@@ -1,4 +1,3 @@
-* Package and push to S3 using https://github.com/LearnBoost/knox (S3 assumes 'production' environment when packaging)
 * Embed images manipulator
   # if not base64string or base64string.length > 32768
 * Embed fonts manipulator
