@@ -77,6 +77,13 @@ describe 'nap.package', ->
         ".foo { background: red; }"
       )
       done()
+    
+    it 'replaces all wildcards', ->
+      nap.package require('../stubs/assets_stub13.coffee'), 'spec/fixtures/assets'
+      expect(fs.readFileSync('spec/fixtures/assets/backbone.js').toString()).toEqual(
+        ".foo { background: red; }"
+      )
+      done()
       
   describe 'given a preManipulate', ->
   
