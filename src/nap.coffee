@@ -80,10 +80,9 @@ splitAssetGroup = (group) ->
 
 # Given a list of file strings, replaces the wild cards with the appropriate matches
 replaceWildcards = (files) ->
-  for fileIndex, file of files
-    files.splice(fileIndex, 1, sentry.findWildcards(file)...) if sentry.findWildcards(file).length > 0
-  
-  _.uniq files
+  files = (for file in files
+    if file.indexOf('/*') isnt -1 then sentry.findWildcards file else file)
+  _.uniq _.flatten files
   
 # Given a package name and list of file names concatenate the files and run the given
 # manipulators in the order provided. Then output the concatenated package to the given directory.
