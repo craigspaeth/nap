@@ -2,12 +2,16 @@
 Library of manipulator functions.
 ###
 _ = require 'underscore'
+stylus = require 'stylus'
 
 ###
 Pre-manipulators
 
 Pre-manipulators are passed each individual file before it get merged in to one file.
-Takes the arguments contents and filename and returns the new manipulated contents.
+
+@param {String} contents The contents of the file toString
+@param {String} filename
+@return {String} The manipulated contents 
 ###
 
 @compileCoffeescript = (contents, filename) -> 
@@ -19,7 +23,7 @@ Takes the arguments contents and filename and returns the new manipulated conten
 @compileStylus = (contents, filename) ->
   if filename? and filename.match(/.styl$/)?
     css = ''
-    require('stylus').render contents, (err, out) -> throw err if err; css = out
+    stylus(contents).set('filename', filename).render (err, out) -> throw err if err; css = out
     css
   else
     contents
@@ -37,7 +41,9 @@ Takes the arguments contents and filename and returns the new manipulated conten
 Post-manipulators
 
 Post-manipulators are passed the merged files.
-Takes only one argument, the contents of the merged file and returns the manipulated contents.
+
+@param {String} contents The contents of the merged files
+@return {String} The manipulated contents
 ###
 
 @prependJST = (compilerFunctionStr) -> 

@@ -3,7 +3,7 @@ _ = require 'underscore'
 fs = require 'fs'
 path = require 'path'
 sentry = require 'sentry'
-knox = require ('knox')
+knox = require 'knox'
 
 # Attach manipulators to nap module
 @[name] = fn for name, fn of require(__dirname + '/manipulators')

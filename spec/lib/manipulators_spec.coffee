@@ -20,6 +20,14 @@ assets1 =
     foo: [
       'spec/fixtures/stylus/**/*.styl'
     ]
+    
+  'import.css':
+    preManipulate:
+      'development': [nap.compileStylus]
+  
+    foo: [
+      'spec/fixtures/stylus_import/foo.styl'
+    ]
 
 describe 'nap.compileCoffeescript', ->
 
@@ -59,6 +67,13 @@ describe 'nap.compileStylus', ->
     contents = fs.readFileSync('spec/fixtures/assets/foo.css').toString()
     expect(contents.indexOf("background: #f00;") isnt -1).toBeTruthy()
     expect(contents.indexOf("background: #00f;") isnt -1).toBeTruthy()
+    done()
+    
+  it 'can handle imports correctly', ->
+    nap.package assets1, 'spec/fixtures/assets'
+    contents = fs.readFileSync('spec/fixtures/assets/foo.import.css').toString()
+    expect(contents.indexOf("background: #f00;") isnt -1).toBeTruthy()
+    expect(contents.indexOf("color: #00f;") isnt -1).toBeTruthy()
     done()
     
 describe 'nap.packageJST', ->
