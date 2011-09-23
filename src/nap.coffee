@@ -44,7 +44,7 @@ knox = require 'knox'
 # Given a well formatted assets object and S3 key, secret, bucket, and dir packageToS3 will run package
 # and push the packages to the given dir in the S3 bucket.
 @packageToS3 = (assets, dir, S3Options, callback) =>
-  packages = @package assets, dir, 'production' ? S3Options.env
+  packages = @package assets, dir, S3Options.env ? 'production'
   
   # Setup knox client
   client = knox.createClient

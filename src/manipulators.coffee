@@ -3,6 +3,7 @@ Library of manipulator functions.
 ###
 _ = require 'underscore'
 stylus = require 'stylus'
+nib = require 'nib'
 
 ###
 Pre-manipulators
@@ -23,7 +24,10 @@ Pre-manipulators are passed each individual file before it get merged in to one 
 @compileStylus = (contents, filename) ->
   if filename? and filename.match(/.styl$/)?
     css = ''
-    stylus(contents).set('filename', filename).render (err, out) -> throw err if err; css = out
+    stylus(contents)
+      .set('filename', filename)
+      .use(nib())
+      .render (err, out) -> throw err if err; css = out
     css
   else
     contents

@@ -28,6 +28,14 @@ assets1 =
     foo: [
       'spec/fixtures/stylus_import/foo.styl'
     ]
+    
+  'nib.css':
+    preManipulate:
+      'development': [nap.compileStylus]
+  
+    foo: [
+      'spec/fixtures/nib/foo.styl'
+    ]
 
 describe 'nap.compileCoffeescript', ->
 
@@ -74,6 +82,12 @@ describe 'nap.compileStylus', ->
     contents = fs.readFileSync('spec/fixtures/assets/foo.import.css').toString()
     expect(contents.indexOf("background: #f00;") isnt -1).toBeTruthy()
     expect(contents.indexOf("color: #00f;") isnt -1).toBeTruthy()
+    done()
+    
+  it 'comes with nib', ->
+    nap.package assets1, 'spec/fixtures/assets'
+    contents = fs.readFileSync('spec/fixtures/assets/foo.nib.css').toString()
+    expect(contents.indexOf("display: -webkit-box;") isnt -1).toBeTruthy()
     done()
     
 describe 'nap.packageJST', ->
