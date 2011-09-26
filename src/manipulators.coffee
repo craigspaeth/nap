@@ -8,9 +8,9 @@ nib = require 'nib'
 ###
 Pre-manipulators
 
-Pre-manipulators are passed each individual file before it get merged in to one file.
+Pre-manipulators are passed each individual file before it gets merged in to one file.
 
-@param {String} contents The contents of the file toString
+@param {String} contents The contents of the file
 @param {String} filename
 @return {String} The manipulated contents 
 ###
@@ -26,7 +26,7 @@ Pre-manipulators are passed each individual file before it get merged in to one 
     css = ''
     stylus(contents)
       .set('filename', filename)
-      .use(nib())
+      .import(nib.path + '/nib/index.styl')
       .render (err, out) -> throw err if err; css = out
     css
   else
