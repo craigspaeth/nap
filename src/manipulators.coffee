@@ -26,7 +26,7 @@ Pre-manipulators are passed each individual file before it gets merged in to one
     css = ''
     stylus(contents)
       .set('filename', filename)
-      .import(nib.path + '/nib/index.styl')
+      .use(nib())
       .render (err, out) -> throw err if err; css = out
     css
   else
