@@ -6,7 +6,7 @@
 * Gracefully degrading packages using helpers to detect user-agents
 * Examples folder
 * Find sainer way to do JSTs (Compile jade into javascript strings, prepend a JST object so JST['foo/bar'] from a templates folder
-
+* Default nib with stylus
 * Error for callback from packageToS3
 /Users/Craig/inertia/node_modules/nap/lib/nap.js:73
           _results.push(response.client._httpMessage.url);
