@@ -153,7 +153,7 @@ s3Opts.dir = '/assets'
 knoxClient = knox.createClient
   key: s3Opts.key
   secret: s3Opts.secret
-  bucket: s3Opts.bucket  
+  bucket: s3Opts.bucket
 
 describe 'nap.packageToS3', ->
   

@@ -108,7 +108,6 @@ compilePackage = (name, files, dir, manipulators, env) ->
       concatFileStr = manipulator(concatFileStr)
   
   # Finally write the package to the directory
-  console.log fs.readdirSync dir
   fs.writeFileSync "#{dir}/#{name}", concatFileStr
   
   "#{dir}/#{name}"
