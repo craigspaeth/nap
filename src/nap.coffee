@@ -13,6 +13,7 @@ knox = require 'knox'
 # to the given directory.
 @package = (assets, dir, options) ->
   packages = []
+  console.log dir
   for extension, keys of assets
     for packageName, files of splitAssetGroup(keys).packages
       packages.push(compilePackage(
@@ -108,7 +109,7 @@ compilePackage = (name, files, dir, manipulators, env) ->
       concatFileStr = manipulator(concatFileStr)
   
   # Finally write the package to the directory
-  console.log __dirname + "/#{dir}/#{name}
-  fs.writeFileSync __dirname + "/#{dir}/#{name}", concatFileStr
+  console.log dir, name
+  fs.writeFileSync "#{dir}/#{name}", concatFileStr
   
   "#{dir}/#{name}"
