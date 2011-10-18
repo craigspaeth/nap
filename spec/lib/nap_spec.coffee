@@ -4,7 +4,7 @@ fs = require 'fs'
 _ = require 'underscore'
 knox = require ('knox')
 
-describe 'nap.package', ->
+xdescribe 'nap.package', ->
   
   runAsync()
   
@@ -38,7 +38,7 @@ describe 'nap.package', ->
     expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';bar\nvar bar = 'bar';bar"
     done()
   
-  describe 'using wild cards', ->
+  xdescribe 'using wild cards', ->
   
     runAsync()
     
@@ -85,7 +85,7 @@ describe 'nap.package', ->
       )
       done()
       
-  describe 'given a preManipulate', ->
+  xdescribe 'given a preManipulate', ->
   
     runAsync()
     
@@ -107,7 +107,7 @@ describe 'nap.package', ->
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';foo\nvar bar = 'bar';foo"
       done()
       
-  describe 'given a postManipulate', ->
+  xdescribe 'given a postManipulate', ->
   
     runAsync()
     
@@ -123,7 +123,7 @@ describe 'nap.package', ->
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';\nvar bar = 'bar';qux"
       done()
       
-describe 'nap.watch', ->
+xdescribe 'nap.watch', ->
   
   runAsync()
   
@@ -155,7 +155,7 @@ knoxClient = knox.createClient
   secret: s3Opts.secret
   bucket: s3Opts.bucket
 
-describe 'nap.packageToS3', ->
+xdescribe 'nap.packageToS3', ->
   
   runAsync()
   

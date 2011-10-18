@@ -2,6 +2,7 @@ require '../helpers/spec_helper.coffee'
 fs = require 'fs'
 nap = require '../../src/nap.coffee'
 _ = require 'underscore'
+path = require 'path'
 
 # Local fixtures
 assets1 = 
@@ -151,4 +152,25 @@ describe 'nap.yuiCssMin', ->
   
   it 'compresses css using YUI compressor', ->
     expect(nap.yuiCssMin('body {   \n\n background: red;\n\n   }')).toEqual 'body{background:red}'
+    done()
+    
+describe 'nap.embedImages', ->
+  
+  runAsync()
+  
+  it 'turns any url() to be replaced with the base 64 encoding of the local file if it exists', ->
+    newCss = nap.embedImages(path.join(__dirname, '..', '/fixtures'))('.foo { background: url(/images/img.png)}')
+    expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91J")).toNotEqual -1
+    done()
+    
+  it 'doesnt change the url() paths if the local file doesnt exist', ->
+    newCss = nap.embedImages(path.join(__dirname, '..', '/fixtures'))('.foo { background: url(/images/img_gone.png)}')
+    expect(newCss.indexOf("url(/images/img_gone.png")).toNotEqual -1
+    done()
+    
+  it 'handles multiple url()s like a champ', ->
+    css = '.foo { background: url(/images/img.png) } .bar { background: url(/images/img2.png) }'
+    newCss = nap.embedImages(path.join(__dirname, '..', '/fixtures'))(css)
+    expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91J")).toNotEqual -1
+    expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/")).toNotEqual -1
     done()

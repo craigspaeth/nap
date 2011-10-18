@@ -2,6 +2,9 @@
 Library of manipulator functions.
 ###
 _ = require 'underscore'
+_.mixin(require('underscore.string'))
+fs = require 'fs'
+path = require 'path'
 
 ###
 Pre-manipulators
@@ -63,3 +66,38 @@ Post-manipulators are passed the merged files.
   pro.gen_code(ast)
 
 @yuiCssMin = (contents) -> require('../deps/yui_cssmin.js').minify contents
+
+@embedImages = (imgDir) ->
+  
+  # Table of mime types depending on file extension
+  mimes =
+    '.gif' : 'image/gif'
+    '.png' : 'image/png'
+    '.jpg' : 'image/jpeg'
+    '.jpeg': 'image/jpeg'
+    '.svg' : 'image/svg+xml'
+  
+  return (contents) ->
+    
+    # While there are urls in the contents + offset replace it with base 64
+    # If that url() doesn't point to an existing file then skip it by pointing the
+    # offset ahead of it
+    offset = 0
+    offsetContents = contents.substring(offset, contents.length)
+    while offsetContents.indexOf('url(') isnt -1
+      
+      start = offsetContents.indexOf('url(') + 4 + offset
+      end = contents.substring(start, contents.length).indexOf(')') + start
+      filename = imgDir + contents.substring(start, end)
+      
+      if path.existsSync filename
+        base64Str = fs.readFileSync(filename).toString('base64')
+        mime = mimes[path.extname filename]
+        newUrl = "data:#{mime};base64,#{base64Str}"
+        contents = _.splice(contents, start, end - start, newUrl)
+        end = start + newUrl.length + 4
+      
+      offset = end
+      offsetContents = contents.substring(offset, contents.length)
+      
+    return contents
