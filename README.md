@@ -258,8 +258,12 @@ e.g. A file in `app/templates/home/index.jade` will be packaged as `window.JST['
 Runs uglifyJS on the merged files
 
     nap.yuiCssMin  
-  
+    
 Runs the YUI css compressor on the merged files
+
+    nap.embedImages('public')
+
+Embeds any images using data-uri. You must specify the local directory the images are located in. In this example a style such as `.foo { background: url('/images/bar.png') }` would be pointing to a file in `public/images`
 
     nap.prependJST('Haml')
     
