@@ -174,3 +174,10 @@ describe 'nap.embedImages', ->
     expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91J")).toNotEqual -1
     expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/")).toNotEqual -1
     done()
+    
+  it 'handles images with quotes in the url like a champ', ->
+    css = '.foo { background: url("/images/img.png") } .bar { background: url(\'/images/img2.png\') }'
+    newCss = nap.embedImages(path.join(__dirname, '..', '/fixtures'))(css)
+    expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91J")).toNotEqual -1
+    expect(newCss.indexOf("url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAADCAIAAADdv/")).toNotEqual -1
+    done()

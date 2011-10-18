@@ -88,7 +88,7 @@ Post-manipulators are passed the merged files.
       
       start = offsetContents.indexOf('url(') + 4 + offset
       end = contents.substring(start, contents.length).indexOf(')') + start
-      filename = imgDir + contents.substring(start, end)
+      filename = imgDir + _.trim _.trim(contents.substring(start, end), '"'), "'"
       
       if path.existsSync filename
         base64Str = fs.readFileSync(filename).toString('base64')
@@ -96,6 +96,8 @@ Post-manipulators are passed the merged files.
         newUrl = "data:#{mime};base64,#{base64Str}"
         contents = _.splice(contents, start, end - start, newUrl)
         end = start + newUrl.length + 4
+      else
+        console.log 'NAP: Could not find file ' + filename
       
       offset = end
       offsetContents = contents.substring(offset, contents.length)
