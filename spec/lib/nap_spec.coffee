@@ -4,7 +4,7 @@ fs = require 'fs'
 _ = require 'underscore'
 knox = require ('knox')
 
-xdescribe 'nap.package', ->
+describe 'nap.package', ->
   
   runAsync()
   
@@ -38,7 +38,7 @@ xdescribe 'nap.package', ->
     expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';bar\nvar bar = 'bar';bar"
     done()
   
-  xdescribe 'using wild cards', ->
+  describe 'using wild cards', ->
   
     runAsync()
     
@@ -85,7 +85,7 @@ xdescribe 'nap.package', ->
       )
       done()
       
-  xdescribe 'given a preManipulate', ->
+  describe 'given a preManipulate', ->
   
     runAsync()
     
@@ -107,7 +107,7 @@ xdescribe 'nap.package', ->
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';foo\nvar bar = 'bar';foo"
       done()
       
-  xdescribe 'given a postManipulate', ->
+  describe 'given a postManipulate', ->
   
     runAsync()
     
@@ -123,7 +123,7 @@ xdescribe 'nap.package', ->
       expect(fs.readFileSync('spec/fixtures/assets/foo.js').toString()).toEqual "var foo = 'foo';\nvar bar = 'bar';qux"
       done()
       
-xdescribe 'nap.watch', ->
+describe 'nap.watch', ->
   
   runAsync()
   
@@ -155,7 +155,7 @@ knoxClient = knox.createClient
   secret: s3Opts.secret
   bucket: s3Opts.bucket
 
-xdescribe 'nap.packageToS3', ->
+describe 'nap.packageToS3', ->
   
   runAsync()
   
@@ -166,7 +166,7 @@ xdescribe 'nap.packageToS3', ->
           expect(chunk.toString()).toEqual "var foo = 'foo';\nvar bar = 'bar';"
           done()
       
-  it 'callsback with an array of package urls from the packages', ->
+  xit 'callsback with an array of package urls from the packages', ->
     nap.packageToS3 require('../stubs/assets_stub.coffee'), 'spec/fixtures/assets', s3Opts, (packages) ->
       expect(packages[0].match /^http.*foo\.js$/).toBeTruthy()
       done()

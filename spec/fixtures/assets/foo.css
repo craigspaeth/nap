@@ -1,7 +1,1 @@
-.foo {
-  background: #00f;
-}
-
-.foo {
-  background: #f00;
-}
+.foo { background: red; }
