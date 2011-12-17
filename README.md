@@ -1,5 +1,7 @@
 # Node Asset Packager
 
+**This project is in early beta, please feel free to expirment and contribute :)**
+
 Compiling, packaging, minifying, and compressing your client side assets got you all strung out? Relax, take a nap.
 
 (nap) Node Asset Packager is a module inspired by [Jammit](http://documentcloud.github.com/jammit/) and [Connect Asset Manager](https://github.com/mape/connect-assetmanager) that helps compile and package your assets including stylesheets, javascripts, and javascript templates.
