@@ -96,18 +96,18 @@ Nap will run any pre-processors on `js` and `css` packages based on the file ext
 
 Nap only currently supports the following pre-processors. But please feel free to contribute more.
   
-  * Coffeescript (.coffee)
-  * Stylus (.styl)
+  * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
+  * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
 
 ### Client-side Javascript Templating (JSTs) 
 
 `jst` packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the file directory following "templates" without the file extension.
 
-e.g. The template `app/templates/artwork/detail.jade` will be parsed using jade and can be rendered on the client side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
+e.g. The template `app/templates/artwork/detail.jade` will be parsed using jade and can be rendered on the client-side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
 
 Nap only currently supports the following templating engines. But please feel free to contribute more.
 
- * Jade (.jade)
+ * [Jade](https://github.com/visionmedia/jade) (.jade)
 
 ### Nap modes
 
