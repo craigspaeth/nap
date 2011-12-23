@@ -1,6 +1,4 @@
 .DS_Store
-.s3auth
 *~
 /node_modules/
 /lib/
-/spec/fixtures/assets/**/*
