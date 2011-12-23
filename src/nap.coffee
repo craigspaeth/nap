@@ -156,7 +156,7 @@ precompile = (pkg, type) =>
 # client side.
 # 
 # @param {String} str Contents of the template string to be parsed
-# @param {String} extension The name of the templating engine
+# @param {String} engine The name of the templating engine
 # @return {Function} Accepts template vars and is meant to be run on the client-side
 
 parseTmplToFn = (str, engine) =>
