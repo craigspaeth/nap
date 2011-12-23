@@ -128,20 +128,28 @@ Nap only currently supports the following templating engines. But please feel fr
 
 Nap has two modes 'development' and 'production'.
 
-In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers: `nap.js()` and `nap.css()`. Each time these helpers are called they will re-compile these files, resulting in seamless compilation on page refresh.
+**Development**
+
+In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers: (`nap.js(...), nap.css(...), nap.jst(...)`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
+
+**Production**
   
-In production using the `nap.package()` function; nap will concatenate all of the files into one, minify that file, and finally output the final result in a single package file (e.g. `package-name.js`). Calling one of nap's helpers (`nap.js(...), nap.css(...), nap.jst(...)`) will simply generate a `<script>` or `<link>` tag pointing to that generated file.
+In production use the `nap.package()` function once (e.g. upon deployment).
+
+Calling nap.package() will concatenate all of the files of a package into one, minify, and finally output the final result in a single package file (e.g. `public/assets/package-name.js`). 
+
+Calling one of nap's helpers (`nap.js(...), nap.css(...), nap.jst(...)`) in production mode will simply return a `<script>` or `<link>` tag pointing to the final generated file.
 
 ### Options
 
 * assets
-  * the assets object containing all of your package config
+  * the assets object containing all of your packages
 * publicDir
-  * your public directory, defaults to '/public'
+  * your public directory, defaults to `/public`
 * mode
   * the mode you want nap to be in 'production' or 'development', defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'
 * cdnUrl
-  * If you are using a cdn you can pass the url root of where your assets are stored and nap will point there instead of locally in 'production' mode.
+  * If you are using a CDN you can pass the url root of where your assets are stored and nap will point there instead of locally in 'production' mode.
 * embedImages
   * When true, it embeds image urls in CSS using data-uri
 
@@ -151,9 +159,7 @@ In production using the `nap.package()` function; nap will concatenate all of th
 
 ## Tests
 
-Nap uses [Mocha](https://github.com/visionmedia/mocha) for testing.
-
-`mocha`
+Nap uses [Mocha](https://github.com/visionmedia/mocha) for testing. Simply run `mocha` to run the test suite.
 
 ## License
 
