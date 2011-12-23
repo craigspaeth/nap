@@ -1,6 +1,6 @@
 # Node Asset Packager
 
-(nap) Node Asset Packager helps compile and package your assets including stylesheets, javascripts, and javascript templates.
+(nap) Node Asset Packager helps compile and package your assets including stylesheets, javascripts, and client-side javascript templates.
 
 ## Example
 
@@ -29,7 +29,7 @@ nap
       ]
 ````
 
-Include packages in your templates by calling one of nap's helpers
+Include packages in your views by calling one of nap's helpers
 
 ````jade
 !!!
@@ -44,7 +44,7 @@ html
       != nap.js('backbone')
 ````
 
-Concatenate & minify up once for production
+Concatenate & minify once for production
 
 ````coffeescript
 nap
@@ -61,22 +61,7 @@ Some express.js app based examples can be found in the [examples folder](https:/
 
 ## API
 
-Nap makes a couple of assumptions by default. It assumes...
-
-* You have a `/public` folder (like an Express.js or Ruby on Rails public folder) where nap can generate a `/public/assets` folder to store, and reference, the compiled packages
-* You want to concatenate & minify your packages in NODE_ENV=production or NODE_ENV=staging
-
-But you can override these
-
-````coffeescript
-nap
-  publicDir: '/my/obscure/public/dir'
-  mode: 'development'
-  assets:
-    js: # ...
-    css: # ...
-    jst: # ...
-````
+To make things easy nap assumes you have a `/public` folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside `/public/assets`.
 
 ### Packages
 
@@ -118,7 +103,7 @@ Nap only currently supports the following pre-processors. But please feel free t
 
 `jst` packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the file directory following "templates" without the file extension.
 
-e.g. The template `app/templates/foo/bar/index.jade` will be parsed using jade and can be rendered on the client side by calling `JST['foo/bar/index']({ passSomething: 'through' })`
+e.g. The template `app/templates/artwork/detail.jade` will be parsed using jade and can be rendered on the client side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
 
 Nap only currently supports the following templating engines. But please feel free to contribute more.
 
@@ -130,15 +115,15 @@ Nap has two modes 'development' and 'production'.
 
 **Development**
 
-In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers: (`nap.js(...), nap.css(...), nap.jst(...)`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
+In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js(...), nap.css(...), nap.jst(...)`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
 
 **Production**
   
 In production use the `nap.package()` function once (e.g. upon deployment).
 
-Calling nap.package() will concatenate all of the files of a package into one, minify, and finally output the final result in a single package file (e.g. `public/assets/package-name.js`). 
+Calling nap.package() will concatenate all of the files in a package, minify, and finally output the result to a single package file (e.g. `public/assets/package-name.js`). 
 
-Calling one of nap's helpers (`nap.js(...), nap.css(...), nap.jst(...)`) in production mode will simply return a `<script>` or `<link>` tag pointing to the final generated file.
+Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the generated package file.
 
 ### Options
 
