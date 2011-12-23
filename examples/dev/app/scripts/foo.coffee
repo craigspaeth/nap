@@ -1,0 +1,1 @@
+$ -> $('body').append $(JST['hello'] world: 'Earth')

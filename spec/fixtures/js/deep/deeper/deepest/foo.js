@@ -1,1 +1,0 @@
-var foo3 = 'foo3';

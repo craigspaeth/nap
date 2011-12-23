@@ -7,3 +7,8 @@ task 'build', 'src/ --> lib/', ->
       console.log stdout
       console.log stderr
       throw new Error "Error while compiling .coffee to .js"
+
+task 'test', ->
+  exec 'mocha --ignore-leaks', (err, stdout, stderr) ->
+    console.log stdout
+    console.log stderr

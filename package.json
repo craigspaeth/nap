@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Craig Spaeth <craigspaeth@gmail.com> (http://craigspaeth.com)",
   "description": "An asset packager for node.",
   "keywords": [
@@ -16,14 +16,18 @@
     "underscore": "*",
     "underscore.string": "*",
     "coffee-script": "*",
-    "sentry": "https://github.com/craigspaeth/sentry/tarball/master",
+    "jade": "*",
     "stylus": "*",
+    "nib": "*",
     "uglify-js": "*",
-    "knox": "*",
-    "nib": "*"
+    "sqwish": "*",
+    "mkdirp": "*",
+    "file": "*"
   },
   "devDependencies": {
-    "jasmine-node": "*"
+    "mocha": "*",
+    "should": "*",
+    "wrench": "*"
   },
   "main": "lib/nap",
   "scripts": {

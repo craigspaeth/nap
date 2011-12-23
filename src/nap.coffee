@@ -1,100 +1,265 @@
-fileUtil = require 'file'
-_ = require 'underscore'
+# Dependencies
 fs = require 'fs'
 path = require 'path'
-sentry = require 'sentry'
-knox = require 'knox'
+coffee = require 'coffee-script'
+styl = require 'stylus'
+nib = require 'nib'
+jade = require 'jade'
+jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
+sqwish = require 'sqwish'
+uglifyjs = require("uglify-js")
+_ = require 'underscore'
+_.mixin(require('underscore.string'))
+mkdirp = require('mkdirp')
+fileUtil = require 'file'
 
-# Attach manipulators to nap module
-@[name] = fn for name, fn of require(__dirname + '/manipulators')
-
-# Given a well formatted assets object, package will concatenate the files and 
-# run manipulators in the order provided. Then output the concatenated package
-# to the given directory.
+# The initial configuration function. Pass it options such as `assets` to let nap determine which
+# files to put together in packages, among others.
 # 
-# @param {Object} assets A well formatted asset object
-# @param {String} The output directory
-# @param {Options} `options.env` to mimic a node env when packaging
+# @param {Object} options A hash of configuration options
+# @return {Function} Returns itself for chainability
 
-@package = (assets, dir, options) ->
-  packages = []
-  for extension, keys of assets
-    for packageName, files of splitAssetGroup(keys).packages
-      packages.push(compilePackage(
-        packageName + '.' + extension,
-        replaceWildcards(files),
-        dir,
-        splitAssetGroup(keys).manipulators,
-        if options then options.env else null
-      ))
-  packages
+module.exports = (options = {}) =>
+
+  # Config variables
+  @assets = options.assets
+  @publicDir = options.publicDir ? '/public'
+  @mode = options.mode ? do ->
+    switch process.env.NODE_ENV
+      when 'staging' then 'production'
+      when 'production' then 'production'
+      else 'development'
+  @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
+  @embedImages = options.embedImages ? false
+  @_tmplFilePrefix = 'window.JST = {};\n'
+  @_assetsDir = '/assets'
+  @_outputDir = path.normalize @publicDir + @_assetsDir
   
-# Given a well formatted assets object, package will watch for any file changes in the
-# one of the packages and re-compile that package.
+  unless @assets?
+    throw new Error "You must specify an 'assets' hash with keys 'js', 'css', or 'jst'"
+  
+  unless path.existsSync process.cwd() + @publicDir
+    throw new Error "The directory #{@publicDir} doesn't exist"
+    
+  unless path.existsSync process.cwd() + @_outputDir
+    fs.mkdirSync process.cwd() + @_outputDir, 0777
+
+  @
+
+# Run js pre-processors & output the files in dev.
+# Return link tags pointing to processed package or individual files.
 # 
-# @param {Object} assets A well formatted asset object
-# @param {String} The output directory
+# @param {String} pkg The name of the package to output
+# @return {String} Script tag pointing to the ouput package(s)
 
-@watch = (assets, dir) ->
+module.exports.js = (pkg) =>
+  throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
-  # Put a watcher on every file. If that file changes, compile it's package
-  for extension, keys of assets
-    for packageName, files of splitAssetGroup(keys).packages
-      for file in files
-        sentry.watch file, (filename) ->
-          console.log "Found change in package #{packageName + '.' + extension}, compiling"
-          compilePackage(
-            packageName + '.' + extension,
-            replaceWildcards(files),
-            dir,
-            splitAssetGroup(keys).manipulators
-          )
-
-# Given a well formatted assets object and S3 key, secret, bucket, and dir packageToS3 will run package
-# and push the packages to the given dir in the S3 bucket.
+  if @mode is 'production'
+    return "<script src='#{@cdnUrl ? @_assetsDir}/#{pkg}.js' type='text/javascript'></script>"
+  
+  output = ''
+  for filename, contents of precompile pkg, 'js'
+    writeFile filename, contents
+    output += "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
+  output
+  
+# Run css pre-processors & output the packages in dev.
+# Return link tags pointing to processed package or individual files.
 # 
-# @param {Object} assets A well formatted asset object
-# @param {String} dir The directory inside the s3 bucket to output to
-# @param {Object} s3Options options passed to [knox](https://github.com/LearnBoost/knox) module
-# @param {Function} callback
+# @param {String} pkg The name of the package to output
+# @return {String} Style tag pointing to the ouput package(s)
 
-@packageToS3 = (assets, dir, S3Options, callback) =>
-  packages = @package assets, dir, S3Options.env ? 'production'
+module.exports.css = (pkg) =>
+  throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
-  # Setup knox client
-  client = knox.createClient
-    key: S3Options.key
-    secret: S3Options.secret
-    bucket: S3Options.bucket
+  if @mode is 'production'
+    return "<link href='#{@cdnUrl ? @_assetsDir}/#{pkg}.css' rel='stylesheet' type='text/css'>"
   
-  # Setup callback function
-  responses = []
-  finishPackaging = _.after packages.length, (responses) -> 
-    callback responses
+  output = ''
+  for filename, contents of precompile pkg, 'css'
+    writeFile filename, embedImages contents
+    output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
+  output
   
-  # Go through each package and put to S3, add up the responses and callback when finished,
-  # throwing any errors along the way
-  for package in packages
-    to = S3Options.dir + '/' + path.basename(package)
-    client.putFile package, to, (err, res) ->
-      throw err if err
-      responses.push res
-      console.log "Put package #{package} in S3 bucket '#{S3Options.bucket}' \n"
-      finishPackaging responses
-
-# Given an asset group split up it's packages and manipulators
+# Compile the templates into JST['file/path'] : functionString pairs in dev.
+# Return the script tag pointing to the file.
 # 
-# @param {Object} A group such as `js` of the asset object
-# @return {Object} Split into keys `packages` and `manipulators`
+# @param {String} pkg The name of the package to output
+# @return {String} Script tag pointing to the ouput JST script file
 
-splitAssetGroup = (group) ->
-  packages = _.clone group
-  manipulators =
-    pre: group.preManipulate
-    post: group.postManipulate  
-  delete packages['preManipulate']
-  delete packages['postManipulate']
-  packages: packages, manipulators: manipulators
+module.exports.jst = (pkg) =>
+  throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
+  
+  if @mode is 'production'
+    return "<script src='#{@cdnUrl ? @_assetsDir}/#{pkg}.jst.js' type='text/javascript'></script>"
+  
+  fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
+  fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplFilePrefix
+  
+  """
+  <script src='#{@_assetsDir}/nap-templates-prefix.js' type='text/javascript'></script>
+  <script src='#{@_assetsDir}/#{pkg}.jst.js' type='text/javascript'></script>
+  """
+
+# Runs through all of the asset packages. Concatenates, minifies, and gzips them. Then outputs
+# the final packages to the outputDir. (To be run once during the build step for production)
+
+module.exports.package = =>
+  
+  if @assets.js?
+    for pkg, files of @assets.js
+      contents = (contents for filename, contents of precompile pkg, 'js').join('')
+      contents = uglify contents if @mode is 'production'
+      writeFile pkg + '.js', contents
+      
+  if @assets.css?
+    for pkg, files of @assets.css
+      contents = embedImages (contents for filename, contents of precompile pkg, 'css').join('')
+      contents = sqwish.minify contents if @mode is 'production'
+      writeFile pkg + '.css', contents
+      
+  if @assets.jst?
+    for pkg, files of @assets.jst
+      contents = @_tmplFilePrefix
+      contents += generateJSTs pkg
+      contents = uglify contents if @mode is 'production'
+      writeFile pkg + '.jst.js', contents
+ 
+# Run any pre-processors on a package, and return an hash of { filename: compiledContents }
+# 
+# @param {String} pkg The name of the package to precompile
+# @param {String} type Either 'js' or 'css'
+# @return {Object} A { filename: compiledContents } hash 
+
+precompile = (pkg, type) =>
+  
+  hash = {}
+  
+  for filename in replaceWildcards @assets[type][pkg]
+    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    
+    if filename.match /\.coffee$/
+      contents = coffee.compile contents
+    
+    if filename.match /\.styl$/
+      styl(contents)
+        .set('filename', process.cwd() + '/' + filename)
+        .use(nib())
+        .render (err, out) -> contents = out
+    
+    outputFilename = filename.replace /\..*/, '' + '.' + type
+    hash[outputFilename] = contents
+  hash
+
+# A function that takes a template string and parses it into function meant to be run on the 
+# client side. The extension helps determine which parser to use.
+# 
+# @param {String} str Contents of the template string to be parsed
+# @param {String} extension The file extension used to determine the parser
+# @return {Function} Accepts template vars and is meant to be run on the client-side
+
+parseTmplToFn = (str, engine) =>
+  switch engine
+    when 'jade'
+      if @_tmplFilePrefix.indexOf jadeRuntime is -1
+        @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
+      return jade.compile(str, { client: true, compileDebug: @mode is 'development' })
+
+
+# Creates a file with template functions packed into a JST namespace
+# 
+# @param {String} pkg The package name to generate from
+# @return {String} The new JST file contents
+
+generateJSTs = (pkg) =>
+  
+  tmplFileContents = ''
+  
+  for filename in replaceWildcards @assets.jst[pkg]
+    
+    switch _.last filename.split('.')
+      when 'jade' then engine = 'jade'
+    
+    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    contents = parseTmplToFn(contents, engine).toString()
+    
+    if filename.indexOf('templates') > -1
+      namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
+    else
+      namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
+    
+    tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
+  tmplFileContents
+
+# Given a filename creates the sub directories it's in if it doesn't exist. And write it to the
+# output path.
+# 
+# @param {String} filename Filename of the css/js/jst file to be output
+# @param {String} contents Contents of the file to be output
+# @return {String} The new full directory of the output file
+
+writeFile = (filename, contents) =>
+  dir = process.cwd() + @_outputDir + '/' + filename
+  p = path.dirname dir
+  mkdirp.sync p, 0755 unless path.exists p
+  fs.writeFileSync dir, contents ? ''
+
+# Runs uglify js on a string of javascript
+# 
+# @param {String} str String of js to be uglified
+# @return {String} str Minifed js string
+
+uglify = (str) ->
+  jsp = uglifyjs.parser
+  pro = uglifyjs.uglify
+  ast = jsp.parse str
+  ast = pro.ast_mangle(ast)
+  ast = pro.ast_squeeze(ast)
+  pro.gen_code(ast)
+
+# Given the contents of a css file, replace references to url() with base64 embedded image
+# 
+# @param {String} str The CSS string to replace url()'s with
+# @return {String} The CSS string with the url()'s replaced
+
+embedImages = (contents) =>
+  
+  return contents if not @embedImages or not contents? or contents is ''
+  
+  # Table of mime types depending on file extension
+  mimes =
+    '.gif' : 'image/gif'
+    '.png' : 'image/png'
+    '.jpg' : 'image/jpeg'
+    '.jpeg': 'image/jpeg'
+    '.svg' : 'image/svg+xml'
+
+  # While there are urls in the contents + offset replace it with base 64
+  # If that url() doesn't point to an existing file then skip it by pointing the
+  # offset ahead of it
+  offset = 0
+  offsetContents = contents.substring(offset, contents.length)
+  while offsetContents.indexOf('url(') isnt -1
+
+    start = offsetContents.indexOf('url(') + 4 + offset
+    end = contents.substring(start, contents.length).indexOf(')') + start
+    filename = _.trim _.trim(contents.substring(start, end), '"'), "'"
+    filename = process.cwd() + @publicDir + '/' + filename
+    
+    if path.existsSync filename
+      base64Str = fs.readFileSync(filename).toString('base64')
+      mime = mimes[path.extname filename]
+      newUrl = "data:#{mime};base64,#{base64Str}"
+      contents = _.splice(contents, start, end - start, newUrl)
+      end = start + newUrl.length + 4
+    else
+      console.log 'Tried to embed data-uri, but could not find file ' + filename
+
+    offset = end
+    offsetContents = contents.substring(offset, contents.length)
+
+  return contents
 
 # Given a list of file strings, replaces the wild cards with the appropriate matches
 # 
@@ -102,41 +267,42 @@ splitAssetGroup = (group) ->
 # @return {Array} Filename strings
 
 replaceWildcards = (files) ->
+  files = (process.cwd().replace(/\/$/, '') + '/' + file.replace /^\//, '' for file in files)
   files = (for file in files
-    if file.indexOf('/*') isnt -1 then sentry.findWildcards file else file)
-  _.uniq _.flatten files
+    if file.indexOf('/*') isnt -1 then findWildcards(file) else file)
+  files = _.uniq _.flatten files
+  files = (file.replace(process.cwd(), '').replace(/^\//, '') for file in files)
+  files
+
+# Given a filename such as /fld/**/* return all recursive files
+# or given a filename such as /fld/* return all files one directory deep.
+# Limit by extension via /fld/**/*.coffee
+# 
+# @param {String} filename
+# @return {Array} An array of file path strings
+
+findWildcards = (filename) ->
   
-# Output an asset package to the given directory.
-#  
-# @param {String} name The name of the package e.g. 'vendor'
-# @param {Array} files The filenames to be packaged 
-# @param {String} dir Output directory
-# @param {Object} manipulators A hash with pre & post keys that are arrays of functions to run
-# @param {String} env Optionally pass a node env to mimic
-# @return {String} File path of the outputted package
-
-compilePackage = (name, files, dir, manipulators, env) ->
-
-  env = env ? process.env.NODE_ENV ? 'development'
-
-  # Map files contents
-  fileStrs = (fs.readFileSync(file).toString() for file in files)
-
-  # Run any pre manipulators on each of the files
-  for i, file of files
-    if manipulators? and manipulators.pre? and (manipulators.pre[env]? or manipulators.pre['*']?)
-      for manipulator in (manipulators.pre[env] ? manipulators.pre['*'])
-        fileStrs[i] = manipulator(fileStrs[i], file)
-
-  # Concatenate the files
-  concatFileStr = (file for file in fileStrs).join '\n'
-
-  # Run any post manipulators on the concatenated file
-  if manipulators? and manipulators.post? and (manipulators.post[env]? or manipulators.post['*']?)
-    for manipulator in (manipulators.post[env] ? manipulators.post['*'])
-      concatFileStr = manipulator(concatFileStr)
+  files = []
   
-  # Finally write the package to the directory
-  fs.writeFileSync "#{dir}/#{name}", concatFileStr
-  
-  "#{dir}/#{name}"
+  # If there is a wildcard in the /**/* form of a file then remove it and
+  # splice in all files recursively in that directory
+  if filename? and filename.indexOf('**/*') isnt -1
+    root = filename.split('**/*')[0]
+    ext = filename.split('**/*')[1]
+    fileUtil.walkSync root, (root, flds, fls) ->
+      root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
+      for file in fls
+        if file.match(new RegExp ext + '$')? and _.indexOf(files, root + file) is -1
+          files.push(root + file)
+
+  # If there is a wildcard in the /* form then remove it and splice in all the
+  # files one directory deep
+  else if filename? and filename.indexOf('/*') isnt -1
+    root = filename.split('/*')[0]
+    ext = filename.split('/*')[1]
+    for file in fs.readdirSync(root)
+      if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')? and _.indexOf(files, root + '/' + file) is -1
+        files.push(root + '/' + file)
+        
+  files
