@@ -153,10 +153,10 @@ precompile = (pkg, type) =>
   hash
 
 # A function that takes a template string and parses it into function meant to be run on the 
-# client side. The extension helps determine which parser to use.
+# client side.
 # 
 # @param {String} str Contents of the template string to be parsed
-# @param {String} extension The file extension used to determine the parser
+# @param {String} extension The name of the templating engine
 # @return {Function} Accepts template vars and is meant to be run on the client-side
 
 parseTmplToFn = (str, engine) =>
