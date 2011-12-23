@@ -126,7 +126,7 @@ module.exports.package = =>
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.jst.js', contents
  
-# Run any pre-processors on a package, and return an hash of { filename: compiledContents }
+# Run any pre-processors on a package, and return a hash of { filename: compiledContents }
 # 
 # @param {String} pkg The name of the package to precompile
 # @param {String} type Either 'js' or 'css'
