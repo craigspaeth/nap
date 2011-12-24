@@ -1,6 +1,3 @@
-* Must Have
-  * Gziping packages for production
-
 * Should Have
   * Font embedding
   * IE compatible packages
