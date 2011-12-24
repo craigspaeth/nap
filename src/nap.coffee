@@ -111,7 +111,7 @@ module.exports.package = (callback) =>
   
   total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) ->
     memo + num
-  finishCallback = _.after total, callback
+  finishCallback = _.after total, -> callback() if callback?
   
   if @assets.js?
     for pkg, files of @assets.js
@@ -145,12 +145,14 @@ module.exports.package = (callback) =>
 # @param {String} filename The name of the new file
   
 gzipPkg = (contents, filename, callback) =>
-  return unless @gzip
-  exec "gzip #{process.cwd() + @_outputDir + '/'}#{filename}", (err, stdout, stderr) ->
-    console.log stderr if stderr?
-    writeFile filename, contents
+  if @gzip
+    exec "gzip #{process.cwd() + @_outputDir + '/'}#{filename}", (err, stdout, stderr) ->
+      console.log stderr if stderr?
+      writeFile filename, contents
+      callback()
+  else
     callback()
-
+  
 # Run any pre-processors on a package, and return a hash of { filename: compiledContents }
 # 
 # @param {String} pkg The name of the package to precompile
