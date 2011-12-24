@@ -58,7 +58,9 @@ module.exports.js = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
-    return "<script src='#{@cdnUrl ? @_assetsDir}/#{pkg}.js' type='text/javascript'></script>"
+    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.js'
+    src += '.jgz' if @gzip
+    return "<script src='#{src}' type='text/javascript'></script>"
   
   output = ''
   for filename, contents of precompile pkg, 'js'
@@ -76,7 +78,9 @@ module.exports.css = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
-    return "<link href='#{@cdnUrl ? @_assetsDir}/#{pkg}.css' rel='stylesheet' type='text/css'>"
+    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.css'
+    src += '.cgz' if @gzip
+    return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
   output = ''
   for filename, contents of precompile pkg, 'css'
@@ -94,7 +98,9 @@ module.exports.jst = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
-    return "<script src='#{@cdnUrl ? @_assetsDir}/#{pkg}.jst.js' type='text/javascript'></script>"
+    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.jst.js'
+    src += '.jgz' if @gzip
+    return "<script src='#{src}' type='text/javascript'></script>"
   
   fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
   fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplFilePrefix
@@ -146,8 +152,11 @@ module.exports.package = (callback) =>
   
 gzipPkg = (contents, filename, callback) =>
   if @gzip
-    exec "gzip #{process.cwd() + @_outputDir + '/'}#{filename}", (err, stdout, stderr) ->
+    file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+    ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
+    exec "gzip #{file}", (err, stdout, stderr) ->
       console.log stderr if stderr?
+      fs.renameSync file + '.gz', file + ext
       writeFile filename, contents
       callback()
   else

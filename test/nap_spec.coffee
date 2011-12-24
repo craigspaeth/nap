@@ -128,6 +128,16 @@ describe 'running the `js` function', ->
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.js('baz').should.equal "<script src='http://cdn.com/baz.js' type='text/javascript'></script>"
     
+    it 'points to the gzipped file if specified', ->
+      nap
+        mode: 'production'
+        gzip: true
+        assets:
+          js:
+            baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+      nap.js('baz').should.equal "<script src='/assets/baz.js.jgz' type='text/javascript'></script>"
+     
+    
 describe 'running the `css` function', ->
   
   it 'takes wildcards', ->
@@ -244,6 +254,17 @@ describe 'running the `css` function', ->
       nap.css('baz').should.equal(
         "<link href=\'http://cdn.com/baz.css\' rel=\'stylesheet\' type=\'text/css\'>"
       )
+    
+    it 'points to the gzipped file if specified', ->
+      nap
+        mode: 'production'
+        gzip: true
+        assets:
+          css:
+            baz: ['/test/fixtures/1/bar.css']
+      nap.css('baz').should.equal(
+        "<link href=\'/assets/baz.css.cgz\' rel=\'stylesheet\' type=\'text/css\'>"
+      )
       
 describe 'running the `jst` function', ->
   
@@ -337,6 +358,16 @@ describe 'running the `jst` function', ->
           jst:
             foo: ['/test/fixtures/1/foo.jade']
       nap.jst('foo').should.equal "<script src='http://cdn.com/foo.jst.js' type='text/javascript'></script>"
+     
+    it 'points to the gzipped file if specified', ->
+      nap
+        mode: 'production'
+        gzip: true
+        assets:
+          jst:
+            foo: ['/test/fixtures/1/foo.jade']
+      nap.jst('foo').should.equal "<script src='/assets/foo.jst.js.jgz' type='text/javascript'></script>"
+     
         
 describe '`package`', ->
   
@@ -425,5 +456,5 @@ describe '`package`', ->
         css:
           default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/imgs.styl']
     nap.package ->
-      path.existsSync '/public/assets/default.css.gz'
+      path.existsSync '/public/assets/default.css.cgz'
       done()

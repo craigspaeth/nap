@@ -1,3 +1,5 @@
+* Must Have
+  * nap helpers point to gzipped files depending on accepts-gzip
 * Should Have
   * Font embedding
   * IE compatible packages
