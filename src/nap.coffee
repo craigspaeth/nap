@@ -1,16 +1,17 @@
 # Dependencies
 fs = require 'fs'
 path = require 'path'
+exec = require('child_process').exec
 coffee = require 'coffee-script'
 styl = require 'stylus'
 nib = require 'nib'
 jade = require 'jade'
 jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
 sqwish = require 'sqwish'
-uglifyjs = require("uglify-js")
+uglifyjs = require "uglify-js"
 _ = require 'underscore'
-_.mixin(require('underscore.string'))
-mkdirp = require('mkdirp')
+_.mixin require 'underscore.string'
+mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
@@ -31,6 +32,7 @@ module.exports = (options = {}) =>
       else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
   @embedImages = options.embedImages ? false
+  @gzip = options.gzip ? false
   @_tmplFilePrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
@@ -105,19 +107,28 @@ module.exports.jst = (pkg) =>
 # Runs through all of the asset packages. Concatenates, minifies, and gzips them. Then outputs
 # the final packages to the outputDir. (To be run once during the build step for production)
 
-module.exports.package = =>
+module.exports.package = (callback) =>
+  
+  total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) ->
+    memo + num
+  finishCallback = _.after total, callback
   
   if @assets.js?
     for pkg, files of @assets.js
       contents = (contents for filename, contents of precompile pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.js', contents
+      gzipPkg contents, pkg + '.js', finishCallback
+      total++
       
   if @assets.css?
-    for pkg, files of @assets.css
-      contents = embedImages (contents for filename, contents of precompile pkg, 'css').join('')
+    for pkg, files of @assets.css 
+      contents =  (contents for filename, contents of precompile pkg, 'css').join('')
+      contents = embedImages contents if @embedImages
       contents = sqwish.minify contents if @mode is 'production'
       writeFile pkg + '.css', contents
+      gzipPkg contents, pkg + '.css', finishCallback
+      total++
       
   if @assets.jst?
     for pkg, files of @assets.jst
@@ -125,7 +136,21 @@ module.exports.package = =>
       contents += generateJSTs pkg
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.jst.js', contents
- 
+      gzipPkg contents, pkg + '.jst.js', finishCallback
+      total++
+      
+# Gzips a package (used in nap.package to DRY things up)
+# 
+# @param {String} contents The new file contents
+# @param {String} filename The name of the new file
+  
+gzipPkg = (contents, filename, callback) =>
+  return unless @gzip
+  exec "gzip #{process.cwd() + @_outputDir + '/'}#{filename}", (err, stdout, stderr) ->
+    console.log stderr if stderr?
+    writeFile filename, contents
+    callback()
+
 # Run any pre-processors on a package, and return a hash of { filename: compiledContents }
 # 
 # @param {String} pkg The name of the package to precompile
@@ -254,7 +279,7 @@ embedImages = (contents) =>
       contents = _.splice(contents, start, end - start, newUrl)
       end = start + newUrl.length + 4
     else
-      console.log 'Tried to embed data-uri, but could not find file ' + filename
+      throw new Error 'Tried to embed data-uri, but could not find file ' + filename
 
     offset = end
     offsetContents = contents.substring(offset, contents.length)

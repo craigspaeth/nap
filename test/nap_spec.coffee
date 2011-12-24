@@ -3,6 +3,7 @@ nap = require '../src/nap.coffee'
 fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
+exec = require('child_process').exec
 
 describe 'options.publicDir', ->
 
@@ -389,7 +390,6 @@ describe '`package`', ->
           default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/imgs.styl']
     nap.package()
     fs.readFileSync(process.cwd() + '/public/assets/default.css').toString().should.match /data:image/
-  
      
   it 'concatenates the assets and ouputs all of the packages', ->
     nap
@@ -415,3 +415,15 @@ describe '`package`', ->
     jstOut = fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
     jstOut.indexOf("<h2>").should.not.equal -1
     jstOut.indexOf("<h1>").should.not.equal -1
+    
+  it 'will create gzip versions of assets if specified', (done) ->
+    exec 'rm -rf public/assets/'
+    nap
+      embedImages: true
+      gzip: true
+      assets:
+        css:
+          default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/imgs.styl']
+    nap.package ->
+      path.existsSync '/public/assets/default.css.gz'
+      done()
