@@ -85,7 +85,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   
   output = ''
   for filename, contents of precompile pkg, 'css'
-    writeFile filename, embedImages contents
+    writeFile filename, embedFiles contents
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
   
@@ -131,7 +131,7 @@ module.exports.package = (callback) =>
   if @assets.css?
     for pkg, files of @assets.css 
       contents =  (contents for filename, contents of precompile pkg, 'css').join('')
-      contents = embedImages contents if @embedImages
+      contents = embedFiles contents
       contents = sqwish.minify contents if @mode is 'production'
       writeFile pkg + '.css', contents
       gzipPkg contents, pkg + '.css', finishCallback
@@ -260,7 +260,7 @@ uglify = (str) ->
 # @param {String} str The CSS string to replace url()'s with
 # @return {String} The CSS string with the url()'s replaced
 
-embedImages = (contents) =>
+embedFiles = (contents) =>
   
   return contents if not contents? or contents is ''
   
@@ -293,7 +293,7 @@ embedImages = (contents) =>
     start = offsetContents.indexOf('url(') + 4 + offset
     end = contents.substring(start, contents.length).indexOf(')') + start
     filename = _.trim _.trim(contents.substring(start, end), '"'), "'"
-    filename = process.cwd() + @publicDir + '/' + filename
+    filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
     mime = mimes[path.extname filename]
     
     continue unless mime?
