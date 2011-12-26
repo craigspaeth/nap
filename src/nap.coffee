@@ -300,7 +300,9 @@ embedFiles = (contents) =>
     filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
     mime = mimes[path.extname filename]
     
-    continue unless mime?
+    unless mime?
+      offset = end
+      continue
     
     if path.existsSync filename
       base64Str = fs.readFileSync(filename).toString('base64')
