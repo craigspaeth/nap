@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "Craig Spaeth <craigspaeth@gmail.com> (http://craigspaeth.com)",
   "description": "An asset packager for node.",
   "keywords": [
