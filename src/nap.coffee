@@ -279,15 +279,19 @@ embedFiles = (contents) =>
     mimes = _.extend {
       '.ttf': 'font/truetype;charset=utf-8'
       '.woff': 'font/woff;charset=utf-8'
+      '.svg' : 'image/svg+xml'
     }, mimes
   
   return contents if _.isEmpty mimes
   
+  offset = 0
+  offsetContents = contents.substring(offset, contents.length)
+  
+  return contents unless offsetContents.match(/url/g)?
+  
   # While there are urls in the contents + offset replace it with base 64
   # If that url() doesn't point to an existing file then skip it by pointing the
   # offset ahead of it
-  offset = 0
-  offsetContents = contents.substring(offset, contents.length)
   for i in [0..offsetContents.match(/url/g).length]
 
     start = offsetContents.indexOf('url(') + 4 + offset

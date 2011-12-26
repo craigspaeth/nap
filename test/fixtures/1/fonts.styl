@@ -1,6 +1,9 @@
-@font-face
-  font-family 'Foo'
-  src url("/fonts/font.ttf") format("truetype")
+font-face(family, filename)
+  @font-face
+    font-family family
+    src url("/fonts/" + filename + ".ttf") format("truetype")
+
+font-face('Foo', 'font')
 
 .foo
   font-family 'Foo'
