@@ -32,6 +32,7 @@ module.exports = (options = {}) =>
       else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
   @embedImages = options.embedImages ? false
+  @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
   @_tmplFilePrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
@@ -200,7 +201,7 @@ parseTmplToFn = (str, engine) =>
     when 'jade'
       if @_tmplFilePrefix.indexOf jadeRuntime is -1
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
-      return jade.compile(str, { client: true, compileDebug: @mode is 'development' })
+      return jade.compile(str, { client: true, compileDebug: true })
 
 
 # Creates a file with template functions packed into a JST namespace
@@ -261,31 +262,45 @@ uglify = (str) ->
 
 embedImages = (contents) =>
   
-  return contents if not @embedImages or not contents? or contents is ''
+  return contents if not contents? or contents is ''
   
   # Table of mime types depending on file extension
-  mimes =
-    '.gif' : 'image/gif'
-    '.png' : 'image/png'
-    '.jpg' : 'image/jpeg'
-    '.jpeg': 'image/jpeg'
-    '.svg' : 'image/svg+xml'
-
+  mimes = {}
+  if @embedImages
+    mimes = _.extend {
+      '.gif' : 'image/gif'
+      '.png' : 'image/png'
+      '.jpg' : 'image/jpeg'
+      '.jpeg': 'image/jpeg'
+      '.svg' : 'image/svg+xml'
+    }, mimes
+  
+  if @embedFonts
+    mimes = _.extend {
+      '.ttf': 'font/truetype;charset=utf-8'
+      '.woff': 'font/woff;charset=utf-8'
+    }, mimes
+  
+  return contents if _.isEmpty mimes
+  
   # While there are urls in the contents + offset replace it with base 64
   # If that url() doesn't point to an existing file then skip it by pointing the
   # offset ahead of it
   offset = 0
   offsetContents = contents.substring(offset, contents.length)
-  while offsetContents.indexOf('url(') isnt -1
+  for i in [0..offsetContents.match(/url/g).length]
 
     start = offsetContents.indexOf('url(') + 4 + offset
     end = contents.substring(start, contents.length).indexOf(')') + start
     filename = _.trim _.trim(contents.substring(start, end), '"'), "'"
     filename = process.cwd() + @publicDir + '/' + filename
+    mime = mimes[path.extname filename]
+    
+    continue unless mime?
     
     if path.existsSync filename
       base64Str = fs.readFileSync(filename).toString('base64')
-      mime = mimes[path.extname filename]
+      
       newUrl = "data:#{mime};base64,#{base64Str}"
       contents = _.splice(contents, start, end - start, newUrl)
       end = start + newUrl.length + 4

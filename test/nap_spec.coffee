@@ -51,7 +51,8 @@ it "will throw an error if no assets are specified", ->
     nap()
     throw new Error()
   catch e
-    e.message.should.equal "You must specify an 'assets' hash with keys 'js', 'css', or 'jst'"
+    e.message.should
+      .equal "You must specify an 'assets' hash with keys 'js', 'css', or 'jst'"
     
 describe 'running the `js` function', ->
   
@@ -60,7 +61,8 @@ describe 'running the `js` function', ->
       assets:
         js:
           foo: ['/test/fixtures/1/*.coffee']
-    nap.js('foo').should.equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
+    nap.js('foo').should
+      .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
   
   it 'throw an error if the package doesnt exists', ->
     nap
@@ -78,7 +80,8 @@ describe 'running the `js` function', ->
       assets:
         js:
           bar: ['test/fixtures/1/bar.coffee']
-    nap.js('bar').should.equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
+    nap.js('bar').should
+      .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
       
   describe 'in development mode', ->
     
@@ -87,8 +90,10 @@ describe 'running the `js` function', ->
         assets:
           js:
             bar: ['/test/fixtures/1/bar.coffee']
-      nap.js('bar').should.equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
-      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/bar.js').toString().should.match /var/  
+      nap.js('bar').should
+        .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
+      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/bar.js')
+        .toString().should.match /var/  
     
     it 'returns multiple script tags put together', ->
       nap
@@ -105,7 +110,8 @@ describe 'running the `js` function', ->
         assets:
           js:
             bar: ['test/fixtures/1/sub/baz.coffee']
-      nap.js('bar').should.equal "<script src='/assets/test/fixtures/1/sub/baz.js' type='text/javascript'></script>"
+      nap.js('bar').should
+        .equal "<script src='/assets/test/fixtures/1/sub/baz.js' type='text/javascript'></script>"
     
     it 'only compiles files that have been changed since they were last touched'
     
@@ -126,7 +132,8 @@ describe 'running the `js` function', ->
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.js('baz').should.equal "<script src='http://cdn.com/baz.js' type='text/javascript'></script>"
+      nap.js('baz').should
+        .equal "<script src='http://cdn.com/baz.js' type='text/javascript'></script>"
     
     it 'points to the gzipped file if specified', ->
       nap
@@ -145,14 +152,16 @@ describe 'running the `css` function', ->
       assets:
         css:
           foo: ['/test/fixtures/1/*.css']
-    nap.css('foo').should.equal "<link href=\'/assets/test/fixtures/1/bar.css\' rel=\'stylesheet\' type=\'text/css\'>"
+    nap.css('foo').should
+      .equal "<link href=\'/assets/test/fixtures/1/bar.css\' rel=\'stylesheet\' type=\'text/css\'>"
   
   it "can handle a lack of leading slash", ->
     nap
       assets:
         css:
           foo: ['test/fixtures/1/bar.css']
-    nap.css('foo').should.equal "<link href=\'/assets/test/fixtures/1/bar.css\' rel=\'stylesheet\' type=\'text/css\'>"
+    nap.css('foo').should
+      .equal "<link href=\'/assets/test/fixtures/1/bar.css\' rel=\'stylesheet\' type=\'text/css\'>"
   
   it 'embeds any image files', ->
     nap
@@ -161,7 +170,8 @@ describe 'running the `css` function', ->
         css:
           foo: ['/test/fixtures/1/imgs.styl']
     nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs.css').toString().should.match /data:image/
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs.css')
+      .toString().should.match /data:image/
   
   it 'embeds image files in sub directories', ->
     nap
@@ -170,7 +180,8 @@ describe 'running the `css` function', ->
         css:
           foo: ['/test/fixtures/1/img_deep.styl']
     nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_deep.css').toString().should.match /data:image/
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_deep.css')
+      .toString().should.match /data:image/
   
   it 'doesnt have to embed image files', ->
     nap
@@ -179,7 +190,28 @@ describe 'running the `css` function', ->
         css:
           foo: ['/test/fixtures/1/imgs.styl']
     nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs.css').toString().should.not.match /data:image/
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs.css')
+      .toString().should.not.match /data:image/
+    
+  it 'doesnt try to embed files that arent embeddable', ->
+    nap
+      embedImages: true
+      assets:
+        css:
+          foo: ['/test/fixtures/1/img_garbage.styl']
+    nap.css 'foo'
+    file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_garbage.css')
+    file.toString().should.not.include 'data:'
+  
+  it 'can embed fonts', ->
+    nap
+      embedFonts: true
+      assets:
+        css:
+          foo: ['/test/fixtures/1/fonts.styl']
+    nap.css 'foo'
+    file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/fonts.css')
+    file.toString().should.include 'data:font/truetype'
   
   it 'uses nib', ->
     nap
@@ -187,9 +219,8 @@ describe 'running the `css` function', ->
         css:
           foo: ['/test/fixtures/1/nib.styl']
     nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/nib.css').toString().should.match(
-      /-webkit-border-radius: 2px/
-    )
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/nib.css')
+      .toString().should.include '-webkit-border-radius: 2px'
     
   it 'works with imports and relative stuff', ->
     nap
@@ -197,9 +228,8 @@ describe 'running the `css` function', ->
         css:
           foo: ['/test/fixtures/1/relative.styl']
     nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/relative.css').toString().should.equal(
-      ".foo {\n  background: #f00;\n}\n"
-    )
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/relative.css')
+      .toString().should.equal ".foo {\n  background: #f00;\n}\n"
   
   it 'throws an error if the package doesnt exists', ->
     nap
@@ -229,8 +259,10 @@ describe 'running the `css` function', ->
         assets:
           css:
             foo: ['/test/fixtures/1/foo.styl']
-      nap.css('foo').should.equal "<link href=\'/assets/test/fixtures/1/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
-      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css').toString().should.match /\{/
+      nap.css('foo').should
+        .equal "<link href=\'/assets/test/fixtures/1/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
+      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
+        .toString().should.match /\{/
     
   describe "in production", ->
     
@@ -357,7 +389,8 @@ describe 'running the `jst` function', ->
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.jst('foo').should.equal "<script src='http://cdn.com/foo.jst.js' type='text/javascript'></script>"
+      nap.jst('foo').should
+        .equal "<script src='http://cdn.com/foo.jst.js' type='text/javascript'></script>"
      
     it 'points to the gzipped file if specified', ->
       nap
@@ -366,7 +399,8 @@ describe 'running the `jst` function', ->
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.jst('foo').should.equal "<script src='/assets/foo.jst.js.jgz' type='text/javascript'></script>"
+      nap.jst('foo').should
+        .equal "<script src='/assets/foo.jst.js.jgz' type='text/javascript'></script>"
      
         
 describe '`package`', ->
