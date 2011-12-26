@@ -300,19 +300,18 @@ embedFiles = (contents) =>
     filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
     mime = mimes[path.extname filename]
     
-    unless mime?
-      offset = end
-      continue
-    
-    if path.existsSync filename
-      base64Str = fs.readFileSync(filename).toString('base64')
+    if mime?    
+      if path.existsSync filename
+        base64Str = fs.readFileSync(filename).toString('base64')
       
-      newUrl = "data:#{mime};base64,#{base64Str}"
-      contents = _.splice(contents, start, end - start, newUrl)
-      end = start + newUrl.length + 4
+        newUrl = "data:#{mime};base64,#{base64Str}"
+        contents = _.splice(contents, start, end - start, newUrl)
+        end = start + newUrl.length + 4
+      else
+        throw new Error 'Tried to embed data-uri, but could not find file ' + filename
     else
-      throw new Error 'Tried to embed data-uri, but could not find file ' + filename
-
+      end += 4
+    
     offset = end
     offsetContents = contents.substring(offset, contents.length)
 

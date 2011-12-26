@@ -213,6 +213,16 @@ describe 'running the `css` function', ->
     file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/fonts.css')
     file.toString().should.include 'data:font/truetype'
   
+  it 'can embed fonts using the fancy degrading mixin', ->
+    nap
+      embedFonts: true
+      assets:
+        css:
+          foo: ['/test/fixtures/1/font_mixins.styl']
+    nap.css 'foo'
+    file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/font_mixins.css')
+    file.toString().should.include 'data:font/truetype'
+  
   it 'uses nib', ->
     nap
       assets:
