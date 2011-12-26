@@ -136,11 +136,38 @@ Calling one of nap's helpers in production mode will simply return a `<script>` 
 * cdnUrl
   * If you are using a CDN you can pass the url root of where your assets are stored and nap will point there instead of locally in 'production' mode.
 * embedImages
-  * When true, it embeds image urls in CSS using data-uri
+  * When true, it embeds image urls in CSS using data-uri (defaults to false)
 * embedFonts
-  * When true, it embeds font urls in CSS using data-uri
+  * When true, it embeds font urls in CSS using data-uri (defaults to false)
 * gzip
-  * Gzips packages .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument (nap.js('package-name', false))
+  * Gzips packages .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument (nap.js('package-name', false))  (defaults to false)
+
+````coffeescript
+nap
+  publicDir: '/public'
+  mode: if process.env.NODE_ENV is 'production' then 'production' else 'development'
+  cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/'
+  embedImages: true
+  embedFonts: true
+  gzip: true
+  assets:
+    js:
+      backbone: [
+        '/app/coffeescripts/models/**/*'
+        '/app/coffeescripts/views/**/*'
+        '/app/coffeescripts/routers/**/*'
+      ]
+    css:
+      all: [
+        '/public/stylesheets/blueprint.css'
+        '/app/stylesheets/**/*'
+      ]
+    jst:
+      templates: [
+        '/app/templates/index.jade'
+        '/app/templates/footer.jade'
+      ]
+````
 
 ## Installation
 
