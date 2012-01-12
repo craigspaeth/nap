@@ -85,7 +85,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   
   output = ''
   for filename, contents of precompile pkg, 'css'
-    writeFile filename, embedFiles contents
+    writeFile filename, embedFiles filename, contents
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
   
@@ -130,8 +130,7 @@ module.exports.package = (callback) =>
       
   if @assets.css?
     for pkg, files of @assets.css 
-      contents =  (contents for filename, contents of precompile pkg, 'css').join('')
-      contents = embedFiles contents
+      contents = (embedFiles(filename, contents) for filename, contents of precompile pkg, 'css').join('')
       contents = sqwish.minify contents if @mode is 'production'
       writeFile pkg + '.css', contents
       gzipPkg contents, pkg + '.css', finishCallback
@@ -257,12 +256,14 @@ uglify = (str) ->
 
 # Given the contents of a css file, replace references to url() with base64 embedded image
 # 
+# @param {String} str The filename to replace
 # @param {String} str The CSS string to replace url()'s with
 # @return {String} The CSS string with the url()'s replaced
 
-embedFiles = (contents) =>
+embedFiles = (filename, contents) =>
   
-  return contents if not contents? or contents is ''
+  endsWithEmbed = _.endsWith path.basename(filename).split('.')[0], '_embed'
+  return contents if not contents? or contents is '' or not endsWithEmbed
   
   # Table of mime types depending on file extension
   mimes = {}

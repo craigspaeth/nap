@@ -136,9 +136,9 @@ Calling one of nap's helpers in production mode will simply return a `<script>` 
 * cdnUrl
   * If you are using a CDN you can pass the url root of where your assets are stored and nap will point there instead of locally in 'production' mode.
 * embedImages
-  * When true, it embeds image urls in CSS using data-uri (defaults to false)
+  * When true, it embeds image urls in CSS filenames ending in `_embed` using data-uri (defaults to false) e.g. `images_embed.styl`
 * embedFonts
-  * When true, it embeds font urls in CSS using data-uri (defaults to false)
+  * When true, it embeds font urls in CSS filenames ending in `_embed` using data-uri (defaults to false) e.g. `images_embed.styl`
 * gzip
   * Gzips packages .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument (nap.js('package-name', false))  (defaults to false)
 
