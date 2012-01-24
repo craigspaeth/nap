@@ -184,7 +184,7 @@ precompile = (pkg, type) =>
         .use(nib())
         .render (err, out) -> contents = out
     
-    outputFilename = filename.replace /\..*/, '' + '.' + type
+    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     hash[outputFilename] = contents
   hash
 
