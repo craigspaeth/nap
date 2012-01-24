@@ -64,7 +64,7 @@ describe 'running the `js` function', ->
     nap.js('foo').should
       .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
   
-  it 'throw an error if the package doesnt exists', ->
+  it 'throw an error if the package doesnt exist', ->
     nap
       assets:
         js:
@@ -82,7 +82,14 @@ describe 'running the `js` function', ->
           bar: ['test/fixtures/1/bar.coffee']
     nap.js('bar').should
       .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
-      
+  
+  it "can handle filenames with periods", ->
+    nap
+      assets:
+        js:
+          bar: ['/test/fixtures/1/foo.bar.js']
+    nap.js('bar').should.equal "<script src='/assets/test/fixtures/1/foo.bar.js' type='text/javascript'></script>"
+
   describe 'in development mode', ->
     
     it 'compiles any coffeescript files into js', ->
