@@ -261,7 +261,18 @@ describe 'running the `css` function', ->
       throw new Error()
     catch e
       e.message.should.equal "Cannot find package 'bar'"
-   
+  
+  it 'throws an error if packaging fails', ->
+    nap
+      assets:
+        css:
+          foo: ['/test/fixtures/1/invalid.styl']
+    try
+      nap.css('foo')
+      throw new Error()
+    catch e
+      e.message.should.match /invalid\.styl/
+
   describe 'in development mode', ->
     
     it 'returns multiple link tags put together', ->

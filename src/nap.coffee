@@ -182,7 +182,9 @@ precompile = (pkg, type) =>
       styl(contents)
         .set('filename', process.cwd() + '/' + filename)
         .use(nib())
-        .render (err, out) -> contents = out
+        .render (err, out) ->
+          throw(err) if err
+          contents = out
     
     outputFilename = filename.replace /\..*/, '' + '.' + type
     hash[outputFilename] = contents
