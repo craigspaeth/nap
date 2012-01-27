@@ -11,9 +11,8 @@
     "javascript",
     "javascript templates"
   ],
-  "main": "lib/nap",
+  "main": "lib/index",
   "scripts": {
-    "install": "cake build",
     "test": "mocha"
   },
   "engines": {
