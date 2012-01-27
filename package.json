@@ -11,9 +11,15 @@
     "javascript",
     "javascript templates"
   ],
-  "repository": "http://github.com/craigspaeth/nap",
+  "main": "lib/nap",
+  "scripts": {
+    "test": "mocha"
+  },
+  "engines": {
+    "node": ">= 0.4.0"
+  },
   "dependencies": {
-    "coffee-script": "*",
+    "coffee-script": "~1.2",
     "underscore": "*",
     "underscore.string": "*",
     "jade": "*",
@@ -29,5 +35,8 @@
     "should": "*",
     "wrench": "*"
   },
-  "main": "lib/nap"
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/craigspaeth/nap"
+  }
 }
