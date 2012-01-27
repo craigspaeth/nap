@@ -13,9 +13,9 @@
   ],
   "repository": "http://github.com/craigspaeth/nap",
   "dependencies": {
+    "coffee-script": "*",
     "underscore": "*",
     "underscore.string": "*",
-    "coffee-script": "*",
     "jade": "*",
     "stylus": "*",
     "nib": "*",
