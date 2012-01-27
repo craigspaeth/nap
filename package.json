@@ -29,8 +29,5 @@
     "should": "*",
     "wrench": "*"
   },
-  "main": "lib/nap",
-  "scripts": {
-    "install": "cake build"
-  }
+  "main": "lib/nap"
 }
