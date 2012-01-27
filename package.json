@@ -13,6 +13,7 @@
   ],
   "main": "lib/nap",
   "scripts": {
+    "install": "cake build",
     "test": "mocha"
   },
   "engines": {
