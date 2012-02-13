@@ -210,7 +210,7 @@ parseTmplToFn = (str, engine) =>
 # @param {String} pkg The package name to generate from
 # @return {String} The new JST file contents
 
-generateJSTs = (pkg) =>
+module.exports.generateJSTs = generateJSTs = (pkg) =>
   
   tmplFileContents = ''
   
