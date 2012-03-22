@@ -29,7 +29,8 @@
     "sqwish": "*",
     "mkdirp": "*",
     "file": "*",
-    "glob": "*"
+    "glob": "*",
+    "rimraf": "*"
   },
   "devDependencies": {
     "mocha": "*",
