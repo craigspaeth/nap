@@ -4,6 +4,10 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
+rimraf = require 'rimraf'
+
+beforeEach ->
+  rimraf.sync "#{process.cwd}/public/assets"
 
 describe 'options.publicDir', ->
 
@@ -52,7 +56,7 @@ it "will throw an error if no assets are specified", ->
     throw new Error()
   catch e
     e.message.should
-      .equal "You must specify an 'assets' hash with keys 'js', 'css', or 'jst'"
+      .equal "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
     
 describe 'running the `js` function', ->
   

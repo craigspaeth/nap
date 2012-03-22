@@ -1,4 +1,3 @@
-# Dependencies
 fs = require 'fs'
 path = require 'path'
 exec = require('child_process').exec
@@ -14,11 +13,12 @@ _.mixin require 'underscore.string'
 mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 glob = require 'glob'
+rimraf = require 'rimraf'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
-# files to put together in packages, among others.
+# files to put together in packages.
 # 
-# @param {Object} options A hash of configuration options
+# @param {Object} options A obj of configuration options
 # @return {Function} Returns itself for chainability
 
 module.exports = (options = {}) =>
@@ -40,14 +40,16 @@ module.exports = (options = {}) =>
   @_outputDir = path.normalize @publicDir + @_assetsDir
   
   unless @assets?
-    throw new Error "You must specify an 'assets' hash with keys 'js', 'css', or 'jst'"
+    throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
   
   unless path.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
     
   unless path.existsSync process.cwd() + @_outputDir
     fs.mkdirSync process.cwd() + @_outputDir, 0777
-
+  
+  rimraf.sync "#{process.cwd}/#{@publicDir}/assets"
+  
   @
 
 # Run js pre-processors & output the files in dev.
@@ -145,66 +147,6 @@ module.exports.package = (callback) =>
       writeFile pkg + '.jst.js', contents
       gzipPkg contents, pkg + '.jst.js', finishCallback
       total++
-      
-# Gzips a package (used in nap.package to DRY things up)
-# 
-# @param {String} contents The new file contents
-# @param {String} filename The name of the new file
-  
-gzipPkg = (contents, filename, callback) =>
-  if @gzip
-    file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
-    ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
-    exec "gzip #{file}", (err, stdout, stderr) ->
-      console.log stderr if stderr?
-      fs.renameSync file + '.gz', file + ext
-      writeFile filename, contents
-      callback()
-  else
-    callback()
-  
-# Run any pre-processors on a package, and return a hash of { filename: compiledContents }
-# 
-# @param {String} pkg The name of the package to precompile
-# @param {String} type Either 'js' or 'css'
-# @return {Object} A { filename: compiledContents } hash 
-
-precompile = (pkg, type) =>
-  
-  hash = {}
-  
-  for filename in replaceGlobs @assets[type][pkg]
-    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-    
-    if filename.match /\.coffee$/
-      contents = coffee.compile contents
-    
-    if filename.match /\.styl$/
-      styl(contents)
-        .set('filename', process.cwd() + '/' + filename)
-        .use(nib())
-        .render (err, out) ->
-          throw(err) if err
-          contents = out
-    
-    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
-    hash[outputFilename] = contents
-  hash
-
-# A function that takes a template string and parses it into function meant to be run on the 
-# client side.
-# 
-# @param {String} str Contents of the template string to be parsed
-# @param {String} engine The name of the templating engine
-# @return {Function} Accepts template vars and is meant to be run on the client-side
-
-parseTmplToFn = (str, engine) =>
-  switch engine
-    when 'jade'
-      if @_tmplFilePrefix.indexOf jadeRuntime is -1
-        @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
-      return jade.compile(str, { client: true, compileDebug: true })
-
 
 # Creates a file with template functions packed into a JST namespace
 # 
@@ -230,6 +172,65 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   tmplFileContents
+ 
+# Gzips a package (used in nap.package to DRY things up)
+# 
+# @param {String} contents The new file contents
+# @param {String} filename The name of the new file
+  
+gzipPkg = (contents, filename, callback) =>
+  if @gzip
+    file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+    ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
+    exec "gzip #{file}", (err, stdout, stderr) ->
+      console.log stderr if stderr?
+      fs.renameSync file + '.gz', file + ext
+      writeFile filename, contents
+      callback()
+  else
+    callback()
+  
+# Run any pre-processors on a package, and return a obj of { filename: compiledContents }
+# 
+# @param {String} pkg The name of the package to precompile
+# @param {String} type Either 'js' or 'css'
+# @return {Object} A { filename: compiledContents } obj 
+
+precompile = (pkg, type) =>
+  
+  obj = {}
+  
+  for filename in replaceGlobs @assets[type][pkg]
+    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    
+    if filename.match /\.coffee$/
+      contents = coffee.compile contents
+    
+    if filename.match /\.styl$/
+      styl(contents)
+        .set('filename', process.cwd() + '/' + filename)
+        .use(nib())
+        .render (err, out) ->
+          throw(err) if err
+          contents = out
+    
+    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
+    obj[outputFilename] = contents
+  obj
+
+# A function that takes a template string and parses it into function meant to be run on the 
+# client side.
+# 
+# @param {String} str Contents of the template string to be parsed
+# @param {String} engine The name of the templating engine
+# @return {Function} Accepts template vars and is meant to be run on the client-side
+
+parseTmplToFn = (str, engine) =>
+  switch engine
+    when 'jade'
+      if @_tmplFilePrefix.indexOf jadeRuntime is -1
+        @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
+      return jade.compile(str, { client: true, compileDebug: true })
 
 # Given a filename creates the sub directories it's in if it doesn't exist. And write it to the
 # output path.
