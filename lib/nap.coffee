@@ -44,11 +44,9 @@ module.exports = (options = {}) =>
   
   unless path.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
-    
-  unless path.existsSync process.cwd() + @_outputDir
-    fs.mkdirSync process.cwd() + @_outputDir, 0777
   
-  rimraf.sync "#{process.cwd}/#{@publicDir}/assets"
+  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
+  fs.mkdirSync process.cwd() + @_outputDir, 0777
   
   @
 
@@ -242,7 +240,7 @@ parseTmplToFn = (str, engine) =>
 writeFile = (filename, contents) =>
   dir = process.cwd() + @_outputDir + '/' + filename
   p = path.dirname dir
-  mkdirp.sync p, 0755 unless path.exists p
+  mkdirp.sync p, 0755 unless path.existsSync p
   fs.writeFileSync dir, contents ? ''
 
 # Runs uglify js on a string of javascript

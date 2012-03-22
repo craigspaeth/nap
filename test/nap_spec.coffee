@@ -6,9 +6,6 @@ wrench = require 'wrench'
 exec = require('child_process').exec
 rimraf = require 'rimraf'
 
-beforeEach ->
-  rimraf.sync "#{process.cwd}/public/assets"
-
 describe 'options.publicDir', ->
 
   it "will default to '/public'", ->
@@ -20,7 +17,7 @@ describe 'options.publicDir', ->
       throw new Error()
     catch e
       e.message.should.equal "The directory /foo/bar/ doesn't exist"
-      
+  
   it 'will create an assets directory in publicDir if it doesnt exit', ->
     nap(assets: {}, publicDir: '/test/fixtures/')
     dir = process.cwd() + '/test/fixtures/assets'
