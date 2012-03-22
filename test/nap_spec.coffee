@@ -4,7 +4,6 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
-rimraf = require 'rimraf'
 
 describe 'options.publicDir', ->
 
@@ -445,14 +444,26 @@ describe 'running the `jst` function', ->
 describe '`package`', ->
   
   it 'doesnt minify in anything but production', ->
+    nap
+      mode: 'test'
+      assets:
+        js:
+          all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+    nap.package()
+    fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
+      .indexOf("var a;a=\"foo\"}").should.equal -1
+  
+  describe 'when in development mode', ->
+    
+    it 'adds the jade runtime', ->
       nap
-        mode: 'test'
+        mode: 'development'
         assets:
-          js:
-            all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+          jst:
+            templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-        .indexOf("var a;a=\"foo\"}").should.equal -1
+      fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
+        .should.include "var jade ="
   
   describe 'when in production mode', ->
   

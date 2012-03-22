@@ -139,8 +139,8 @@ module.exports.package = (callback) =>
       
   if @assets.jst?
     for pkg, files of @assets.jst
-      contents = @_tmplFilePrefix
-      contents += generateJSTs pkg
+      contents = generateJSTs pkg
+      contents = @_tmplFilePrefix + contents
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.jst.js', contents
       gzipPkg contents, pkg + '.jst.js', finishCallback
