@@ -13,6 +13,7 @@ _ = require 'underscore'
 _.mixin require 'underscore.string'
 mkdirp = require 'mkdirp'
 fileUtil = require 'file'
+glob = require 'glob'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages, among others.
@@ -172,7 +173,7 @@ precompile = (pkg, type) =>
   
   hash = {}
   
-  for filename in replaceWildcards @assets[type][pkg]
+  for filename in replaceGlobs @assets[type][pkg]
     contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
     
     if filename.match /\.coffee$/
@@ -214,7 +215,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   
   tmplFileContents = ''
   
-  for filename in replaceWildcards @assets.jst[pkg]
+  for filename in replaceGlobs @assets.jst[pkg]
     
     switch _.last filename.split('.')
       when 'jade' then engine = 'jade'
@@ -320,48 +321,14 @@ embedFiles = (filename, contents) =>
 
   return contents
 
-# Given a list of file strings, replaces the wild cards with the appropriate matches
+# Given a list of file strings, replaces the globs with the appropriate matches
 # 
 # @param {Array} files
 # @return {Array} Filename strings
 
-replaceWildcards = (files) ->
+replaceGlobs = (files) ->
   files = (process.cwd().replace(/\/$/, '') + '/' + file.replace /^\//, '' for file in files)
-  files = (for file in files
-    if file.indexOf('/*') isnt -1 then findWildcards(file) else file)
+  files = (glob.sync(file) for file in files)
   files = _.uniq _.flatten files
   files = (file.replace(process.cwd(), '').replace(/^\//, '') for file in files)
-  files
-
-# Given a filename such as /fld/**/* return all recursive files
-# or given a filename such as /fld/* return all files one directory deep.
-# Limit by extension via /fld/**/*.coffee
-# 
-# @param {String} filename
-# @return {Array} An array of file path strings
-
-findWildcards = (filename) ->
-  
-  files = []
-  
-  # If there is a wildcard in the /**/* form of a file then remove it and
-  # splice in all files recursively in that directory
-  if filename? and filename.indexOf('**/*') isnt -1
-    root = filename.split('**/*')[0]
-    ext = filename.split('**/*')[1]
-    fileUtil.walkSync root, (root, flds, fls) ->
-      root = (if root.charAt(root.length - 1) is '/' then root else root + '/')
-      for file in fls
-        if file.match(new RegExp ext + '$')? and _.indexOf(files, root + file) is -1
-          files.push(root + file)
-
-  # If there is a wildcard in the /* form then remove it and splice in all the
-  # files one directory deep
-  else if filename? and filename.indexOf('/*') isnt -1
-    root = filename.split('/*')[0]
-    ext = filename.split('/*')[1]
-    for file in fs.readdirSync(root)
-      if file.indexOf('.') isnt -1 and file.match(new RegExp ext + '$')? and _.indexOf(files, root + '/' + file) is -1
-        files.push(root + '/' + file)
-        
   files

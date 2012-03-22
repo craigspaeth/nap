@@ -28,7 +28,8 @@
     "uglify-js": "*",
     "sqwish": "*",
     "mkdirp": "*",
-    "file": "*"
+    "file": "*",
+    "glob": "*"
   },
   "devDependencies": {
     "mocha": "*",
