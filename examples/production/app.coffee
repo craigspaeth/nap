@@ -1,5 +1,5 @@
 express = require("express")
-global.nap = require('../../src/nap')
+global.nap = require('../../lib/nap')
 
 nap
   mode: 'production'

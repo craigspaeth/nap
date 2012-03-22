@@ -23,8 +23,14 @@ rimraf = require 'rimraf'
 
 module.exports = (options = {}) =>
 
-  # Config variables
+  # Expand asset globs
   @assets = options.assets
+  unless @assets?
+    throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
+  for prefix, obj of @assets
+    @assets[prefix][pkg] = replaceGlobs(files) for pkg, files of @assets[prefix]
+  
+  # Config defaults
   @publicDir = options.publicDir ? '/public'
   @mode = options.mode ? do ->
     switch process.env.NODE_ENV
@@ -39,12 +45,10 @@ module.exports = (options = {}) =>
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
   
-  unless @assets?
-    throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
-  
   unless path.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
+  # Clear out assets directory and start fresh
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
   fs.mkdirSync process.cwd() + @_outputDir, 0777
   
@@ -117,8 +121,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
 
 module.exports.package = (callback) =>
   
-  total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) ->
-    memo + num
+  total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) -> memo + num
   finishCallback = _.after total, -> callback() if callback?
   
   if @assets.js?
@@ -131,7 +134,9 @@ module.exports.package = (callback) =>
       
   if @assets.css?
     for pkg, files of @assets.css 
-      contents = (embedFiles(filename, contents) for filename, contents of precompile pkg, 'css').join('')
+      contents = (for filename, contents of precompile pkg, 'css'
+        embedFiles filename, contents
+      ).join('')
       contents = sqwish.minify contents if @mode is 'production'
       writeFile pkg + '.css', contents
       gzipPkg contents, pkg + '.css', finishCallback
@@ -155,21 +160,31 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   
   tmplFileContents = ''
   
-  for filename in replaceGlobs @assets.jst[pkg]
+  for filename in @assets.jst[pkg]
     
-    switch _.last filename.split('.')
-      when 'jade' then engine = 'jade'
-    
+    # Read the file and compile it into a javascript function string
+    extension = _.last filename.split('.')
     contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-    contents = parseTmplToFn(contents, engine).toString()
+    contents = parseTmplToFn(contents, extension).toString()
     
+    # Templates in a 'templates' folder are namespaced by folder after 'templates'
     if filename.indexOf('templates') > -1
       namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
     else
       namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
     
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
+  
   tmplFileContents
+
+# Instead of compiling & writing the files layed out in the asset packages, nap will compile and
+# serve the files in memory for development.
+
+module.exports.middleware = (req, res, next) =>
+  console.log 
+  console.log req.url
+  next()
+  
  
 # Gzips a package (used in nap.package to DRY things up)
 # 
@@ -198,7 +213,7 @@ precompile = (pkg, type) =>
   
   obj = {}
   
-  for filename in replaceGlobs @assets[type][pkg]
+  for filename in @assets[type][pkg]
     contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
     
     if filename.match /\.coffee$/
@@ -220,11 +235,11 @@ precompile = (pkg, type) =>
 # client side.
 # 
 # @param {String} str Contents of the template string to be parsed
-# @param {String} engine The name of the templating engine
+# @param {String} extension The file extension to determine which template engine
 # @return {Function} Accepts template vars and is meant to be run on the client-side
 
-parseTmplToFn = (str, engine) =>
-  switch engine
+parseTmplToFn = (str, extension) =>
+  switch extension
     when 'jade'
       if @_tmplFilePrefix.indexOf jadeRuntime is -1
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
@@ -256,7 +271,7 @@ uglify = (str) ->
   ast = pro.ast_squeeze(ast)
   pro.gen_code(ast)
 
-# Given the contents of a css file, replace references to url() with base64 embedded image
+# Given the contents of a css file, replace references to url() with base64 embedded images
 # 
 # @param {String} str The filename to replace
 # @param {String} str The CSS string to replace url()'s with
