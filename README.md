@@ -6,7 +6,7 @@
 
 Declare asset packages
 
-````coffeescript
+````
 global.nap = require('nap')
 
 nap
@@ -46,7 +46,7 @@ html
 
 Concatenate & minify once for production
 
-````coffeescript
+````
 nap
   mode: 'production'
   assets:
@@ -67,7 +67,7 @@ To make things easy nap assumes you have a `/public` folder (like an Express.js 
 
 A package is an ordered set of directory glob rules that will be expanded into a list of files. Declare packages by name-spacing them inside the assets object of the nap constructor. 
 
-````coffeescript
+````
 nap
   assets:
     js:
@@ -129,7 +129,7 @@ Calling one of nap's helpers in production mode will simply return a `<script>` 
 
 You can use nap as middleware in development to avoid redundant git diffs and quickly serve files in memory rather than writing to disk.
 
-````coffeescript
+````
 app.use nap.middleware
 ````
 
@@ -150,7 +150,7 @@ app.use nap.middleware
 * gzip (defaults to false)
   * Gzips packages .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument (nap.js('package-name', false))
 
-````coffeescript
+````
 nap
   publicDir: '/public'
   mode: if process.env.NODE_ENV is 'production' then 'production' else 'development'
