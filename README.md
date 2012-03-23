@@ -144,7 +144,7 @@ Nap currently only supports the following templating engines. But please feel fr
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
 
-## Nap modes
+## Nap Modes
 
 Nap has two modes 'development' and 'production'.
 
@@ -164,7 +164,7 @@ You may also gzip, embed images & fonts, and point to a CDN. See **options** abo
 
 ## Middleware
 
-Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'development' mode only)
+Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'gdevelopment' mode only)
 
 ````javascript
 nap = require('nap');
