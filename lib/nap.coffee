@@ -27,8 +27,8 @@ module.exports = (options = {}) =>
   @assets = options.assets
   unless @assets?
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
-  for prefix, obj of @assets
-    @assets[prefix][pkg] = replaceGlobs(files) for pkg, files of @assets[prefix]
+  for key, obj of @assets
+    @assets[key][pkg] = replaceGlobs(files) for pkg, files of @assets[key]
   
   # Config defaults
   @publicDir = options.publicDir ? '/public'
@@ -70,7 +70,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
   
   output = ''
   for filename, contents of precompile pkg, 'js'
-    writeFile filename, contents
+    writeFile filename, contents unless @usingMiddleware
     output += "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
   output
   
@@ -90,7 +90,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   
   output = ''
   for filename, contents of precompile pkg, 'css'
-    writeFile filename, embedFiles filename, contents
+    writeFile filename, embedFiles filename, contents unless @usingMiddleware
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
   
@@ -108,8 +108,9 @@ module.exports.jst = (pkg, gzip = @gzip) =>
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
-  fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
-  fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplFilePrefix
+  unless @usingMiddleware
+    fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
+    fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplFilePrefix
   
   """
   <script src='#{@_assetsDir}/nap-templates-prefix.js' type='text/javascript'></script>
@@ -181,11 +182,25 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
 # serve the files in memory for development.
 
 module.exports.middleware = (req, res, next) =>
-  console.log 
-  console.log req.url
-  next()
   
- 
+  return unless @mode is 'development'
+  
+  @usingMiddleware = true
+  
+  reqFName = req.url.replace('/assets/', '').split('.')[0]
+  reqFName = reqFName.split('.')[0..reqFName.length][0]
+  
+  for key, obj of @assets
+    for pkg, files of @assets[key]
+      for file in files
+        fName = file.split('.')[0..file.length][0]
+        if reqFName is fName
+          res.end precompileFile file
+          return
+        else
+          next()
+          return
+  
 # Gzips a package (used in nap.package to DRY things up)
 # 
 # @param {String} contents The new file contents
@@ -202,7 +217,28 @@ gzipPkg = (contents, filename, callback) =>
       callback()
   else
     callback()
+
+# Run a preprocessor based on the file extension.
+# 
+# @param {String} filename The name of the file to precompile
+# @return {String} The new file contents 
+
+precompileFile = (filename) =>
+  contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
   
+  if filename.match /\.coffee$/
+    contents = coffee.compile contents
+  
+  if filename.match /\.styl$/
+    styl(contents)
+      .set('filename', process.cwd() + '/' + filename)
+      .use(nib())
+      .render (err, out) ->
+        throw(err) if err
+        contents = out
+  
+  contents
+
 # Run any pre-processors on a package, and return a obj of { filename: compiledContents }
 # 
 # @param {String} pkg The name of the package to precompile
@@ -214,18 +250,7 @@ precompile = (pkg, type) =>
   obj = {}
   
   for filename in @assets[type][pkg]
-    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-    
-    if filename.match /\.coffee$/
-      contents = coffee.compile contents
-    
-    if filename.match /\.styl$/
-      styl(contents)
-        .set('filename', process.cwd() + '/' + filename)
-        .use(nib())
-        .render (err, out) ->
-          throw(err) if err
-          contents = out
+    contents = precompileFile filename
     
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents

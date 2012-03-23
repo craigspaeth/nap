@@ -542,3 +542,30 @@ describe '`package`', ->
     nap.package ->
       path.existsSync '/public/assets/default.css.cgz'
       done()
+      
+describe '`middleware`',  ->
+  
+  it 'renders a package in memory', (done) ->
+    nap
+      assets:
+        css:
+          foo: ['/test/fixtures/1/bar.css']
+    nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> 
+      data.should.include 'background: red;'
+      done()
+    }, ->
+      
+  it 'does not write files to disk', ->
+    nap
+      assets:
+        css:
+          foo: ['/test/fixtures/1/bar.css']
+        js:
+          foo: ['/test/fixtures/1/bar.coffee']
+        jst:
+          foo: ['/test/fixtures/1/foo.jade']
+    nap.css('foo')
+    nap.js('foo')
+    nap.jst('foo')
+    nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
+    fs.readdirSync("#{process.cwd()}/public/assets").length.should.equal 0
