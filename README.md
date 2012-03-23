@@ -72,7 +72,7 @@ Some express.js app based examples can be found in the [examples folder](https:/
 
 ## Usage
 
-To make things easy nap assumes you have a *"/public"* folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside *"/public/assets"*.
+To make things easy nap assumes you have a */public* folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside */public/assets*.
 
 Simply pass a set of options to the main `nap` function to configure your asset packages. Then use one of nap's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`) to output "script" and "style" tags into your server-side templates.
 
@@ -80,16 +80,16 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 
 * assets
   * the assets object containing all of your package declarations
-* publicDir (defaults to *"/public"*)
+* publicDir (defaults to */public*)
   * your public directory where you serve static content
 * mode (defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development')
   * the mode you want nap to be in 'production' or 'development'
 * cdnUrl
-  * If you are using a CDN you can pass the url root of where your asset packages are stored on the CDN and nap will point there instead of the local *"/public/assets"* dir in 'production' mode.
+  * If you are using a CDN you can pass the url root of where your asset packages are stored on the CDN and nap will point there instead of the local */public/assets* dir in 'production' mode.
 * embedImages (defaults to false)
-  * When true, it embeds image urls in CSS files ending in *"_embed"* using data-uri  e.g. *"images_embed.styl"*
+  * When true, it embeds image urls in CSS files ending in *_embed* using data-uri  e.g. *images_embed.styl*
 * embedFonts (defaults to false)
-  * When true, it embeds font urls in CSS files ending in *"_embed"* using data-uri  e.g. *"images_embed.styl"*
+  * When true, it embeds font urls in CSS files ending in *_embed* using data-uri  e.g. *images_embed.styl*
 * gzip (defaults to false)
   * Gzips .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 
@@ -136,9 +136,9 @@ Nap only currently supports the following pre-processors. But please feel free t
 
 ### Client-side Javascript Templating (JSTs) 
 
-"jst" packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *"templates"* without the file extension.
+"jst" packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
 
-e.g. The template *"app/templates/artwork/detail.jade"* will be parsed using jade and can be rendered on the client-side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
+e.g. The template *app/templates/artwork/detail.jade* will be parsed using jade and can be rendered on the client-side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
 
 Nap only currently supports the following templating engines. But please feel free to contribute more.
 
@@ -156,7 +156,7 @@ In development, nap will run any pre-processors and output a bunch of individual
   
 In production use the `nap.package()` function once (e.g. upon deployment).
 
-Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *"public/assets/package-name.js"*). 
+Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js*). 
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
   
