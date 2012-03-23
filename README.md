@@ -6,27 +6,32 @@
 
 Declare asset packages
 
-````
-global.nap = require('nap')
+````javascript
+global.nap = require('nap');
 
-nap
-  assets:
-    js:
+nap({
+  assets: {
+    js: {
       backbone: [
-        '/app/coffeescripts/models/**/*'
-        '/app/coffeescripts/views/**/*'
+        '/app/coffeescripts/models/**/*', 
+        '/app/coffeescripts/views/**/*', 
         '/app/coffeescripts/routers/**/*'
       ]
-    css:
+    },
+    css: {
       all: [
-        '/public/stylesheets/blueprint.css'
+        '/public/stylesheets/blueprint.css',
         '/app/stylesheets/**/*'
       ]
-    jst:
+    },
+    jst: {
       templates: [
-        '/app/templates/index.jade'
+        '/app/templates/index.jade',
         '/app/templates/footer.jade'
       ]
+    }
+  }
+});
 ````
 
 Include packages in your views by calling one of nap's helpers
@@ -46,53 +51,83 @@ html
 
 Concatenate & minify once for production
 
-````
-nap
-  mode: 'production'
-  assets:
-    js: # ...
-    css: # ...
-    jst: # ...
-  
-nap.package()
+````javascript
+nap({
+  mode: 'production',
+  assets: {
+    js: //...
+    css: //...
+    jst: //...
+  }
+});
+
+nap.package();
 ````
 
 Some express.js app based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
 
-## API
+## Installation
+
+`npm install nap`
+
+## Usage
 
 To make things easy nap assumes you have a `/public` folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside `/public/assets`.
 
-### Packages
+Simply pass a set of options to the main `nap` function to configure your asset packages. Then use one of nap's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`) to output "script" and "style" tags into your server-side templates.
 
-A package is an ordered set of directory glob rules that will be expanded into a list of files. Declare packages by name-spacing them inside the assets object of the nap constructor. 
+## Options
 
-````
-nap
-  assets:
-    js:
+* assets
+  * the assets object containing all of your package declarations
+* publicDir (defaults to `/public`)
+  * your public directory where you serve static content
+* mode (defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development')
+  * the mode you want nap to be in 'production' or 'development'
+* cdnUrl
+  * If you are using a CDN you can pass the url root of where your asset packages are stored on the CDN and nap will point there instead of the local `/public/assets` dir in 'production' mode.
+* embedImages (defaults to false)
+  * When true, it embeds image urls in CSS files ending in `_embed` using data-uri  e.g. `images_embed.styl`
+* embedFonts (defaults to false)
+  * When true, it embeds font urls in CSS files ending in `_embed` using data-uri  e.g. `images_embed.styl`
+* gzip (defaults to false)
+  * Gzips .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
+
+````javascript
+nap({
+  publicDir: '/public',
+  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/',
+  embedImages: true,
+  embedFonts: true,
+  gzip: true,
+  assets: {
+    js: {
       backbone: [
-        'app/scripts/vendor/backbone.js'
-        'app/scripts/models/**/*'
-        'app/scripts/collections/**/*'
-        'app/scripts/views/**/*'
-        'app/scripts/routers/**/*'
-        'app/scripts/app.coffee'
+        '/app/coffeescripts/models/**/*',
+        '/app/coffeescripts/views/**/*',
+        '/app/coffeescripts/routers/**/*'
       ]
-    css:
-      common: [
-        'app/stylesheets/reset.styl'
-        'app/stylesheets/widgets/*.css'
+    },
+    css: {
+      all: [
+        '/public/stylesheets/blueprint.css',
+        '/app/stylesheets/**/*'
       ]
-    jst:
+    },
+    jst: {
       templates: [
-        'app/templates/*.jade'
+        '/app/templates/index.jade',
+        '/app/templates/footer.jade'
       ]
+    }
+  }
+});
 ````
 
 ### JS & CSS Pre-processors
 
-Nap will run any pre-processors on `js` and `css` packages based on the file extensions.
+Nap will automatically precompile any `js` and `css` pre-processors based on the file extension.
 
 Nap only currently supports the following pre-processors. But please feel free to contribute more.
   
@@ -109,85 +144,35 @@ Nap only currently supports the following templating engines. But please feel fr
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
 
-### Middleware
-
-You can use nap as middleware in development to avoid redundant git diffs and quickly serve files in memory rather than writing to disk.
-
-````coffeescript
-app.use nap.middleware
-````
-
 ### Nap modes
 
 Nap has two modes 'development' and 'production'.
 
 **Development**
 
-In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js(...), nap.css(...), nap.jst(...)`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
+In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
 
 **Production**
   
 In production use the `nap.package()` function once (e.g. upon deployment).
 
-Calling nap.package() will concatenate all of the files in a package, minify, and finally output the result to a single package file (e.g. `public/assets/package-name.js`). 
+Calling nap.package() will concatenate all of the files, minify, and finally output the result to a single package file (e.g. `public/assets/package-name.js`). 
 
-Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the generated package file.
+Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
+  
+You may also gzip, embed images & fonts, and point to a CDN. See "options" above for more info.
 
-### Middleware
+## Middleware
 
-You can use nap as middleware in development to avoid redundant git diffs and quickly serve files in memory rather than writing to disk.
+Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In "development" mode only)
 
+````javascript
+nap = require('nap');
+express = require("express");
+app = express.createServer();
+
+app.use(nap.middleware);
 ````
-app.use nap.middleware
-````
-
-### Options
-
-* assets
-  * the assets object containing all of your package declarations
-* publicDir (defaults to `/public`)
-  * your public directory where you serve static content
-* mode (defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development')
-  * the mode you want nap to be in 'production' or 'development'
-* cdnUrl
-  * If you are using a CDN you can pass the url root of where your assets are stored and nap will point there instead of locally in 'production' mode.
-* embedImages
-  * When true, it embeds image urls in CSS filenames ending in `_embed` using data-uri (defaults to false) e.g. `images_embed.styl`
-* embedFonts
-  * When true, it embeds font urls in CSS filenames ending in `_embed` using data-uri (defaults to false) e.g. `images_embed.styl`
-* gzip (defaults to false)
-  * Gzips packages .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument (nap.js('package-name', false))
-
-````
-nap
-  publicDir: '/public'
-  mode: if process.env.NODE_ENV is 'production' then 'production' else 'development'
-  cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/'
-  embedImages: true
-  embedFonts: true
-  gzip: true
-  assets:
-    js:
-      backbone: [
-        '/app/coffeescripts/models/**/*'
-        '/app/coffeescripts/views/**/*'
-        '/app/coffeescripts/routers/**/*'
-      ]
-    css:
-      all: [
-        '/public/stylesheets/blueprint.css'
-        '/app/stylesheets/**/*'
-      ]
-    jst:
-      templates: [
-        '/app/templates/index.jade'
-        '/app/templates/footer.jade'
-      ]
-````
-
-## Installation
-
-`npm install nap`
 
 ## Tests
 
