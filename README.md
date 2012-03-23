@@ -74,7 +74,7 @@ Some express.js app based examples can be found in the [examples folder](https:/
 
 To make things easy nap assumes you have a */public* folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside */public/assets*.
 
-Simply pass a set of options to the main `nap` function to configure your asset packages. Then use one of nap's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`) to output "script" and "style" tags into your server-side templates.
+Simply pass a set of options to the main `nap` function to configure your asset packages. Then use one of nap's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`) to output `<script>` and `<style> ` tags into your server-side templates.
 
 ## Options
 
@@ -85,13 +85,13 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 * mode (defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development')
   * the mode you want nap to be in 'production' or 'development'
 * cdnUrl
-  * If you are using a CDN you can pass the url root of where your asset packages are stored on the CDN and nap will point there instead of the local */public/assets* dir in 'production' mode.
+  * If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
 * embedImages (defaults to false)
   * When true, it embeds image urls in CSS files ending in *_embed* using data-uri  e.g. *images_embed.styl*
 * embedFonts (defaults to false)
-  * When true, it embeds font urls in CSS files ending in *_embed* using data-uri  e.g. *images_embed.styl*
+  * When true, it embeds font urls in CSS files ending in *_embed* using data-uri  e.g. *fonts_embed.styl*
 * gzip (defaults to false)
-  * Gzips .jgz and .cgz asset packages. The helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
+  * Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 
 ````javascript
 nap({
@@ -125,32 +125,32 @@ nap({
 });
 ````
 
-### JS & CSS Pre-processors
+## JS & CSS Pre-processors
 
-Nap will automatically precompile any `js` and `css` pre-processors based on the file extension.
+Nap will automatically precompile any javascript and css pre-processors based on the file extension.
 
-Nap only currently supports the following pre-processors. But please feel free to contribute more.
+Nap currently only supports the following pre-processors. But please feel free to contribute more.
   
   * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
   * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
 
-### Client-side Javascript Templating (JSTs) 
+## Client-side Javascript Templating (JSTs) 
 
-"jst" packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
+*jst* packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
 
 e.g. The template *app/templates/artwork/detail.jade* will be parsed using jade and can be rendered on the client-side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
 
-Nap only currently supports the following templating engines. But please feel free to contribute more.
+Nap currently only supports the following templating engines. But please feel free to contribute more.
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
 
-### Nap modes
+## Nap modes
 
 Nap has two modes 'development' and 'production'.
 
 ### Development
 
-In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
+In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.g
 
 ### Production
   
@@ -164,7 +164,7 @@ You may also gzip, embed images & fonts, and point to a CDN. See **options** abo
 
 ## Middleware
 
-Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In "development" mode only)
+Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'development' mode only)
 
 ````javascript
 nap = require('nap');
