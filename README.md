@@ -6,7 +6,7 @@
 
 Declare asset packages
 
-````coffee-script
+````
 global.nap = require('nap')
 
 nap
