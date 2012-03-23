@@ -109,6 +109,14 @@ Nap only currently supports the following templating engines. But please feel fr
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
 
+### Middleware
+
+You can use nap as middleware in development to avoid redundant git diffs and quickly serve files in memory rather than writing to disk.
+
+````coffeescript
+app.use nap.middleware
+````
+
 ### Nap modes
 
 Nap has two modes 'development' and 'production'.
