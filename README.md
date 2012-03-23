@@ -34,7 +34,7 @@ nap({
 });
 ````
 
-Include packages in your views by calling one of nap's helpers. (Example in [Jade](https://github.com/visionmedia/jade))
+Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
 
 ````jade
 !!!
