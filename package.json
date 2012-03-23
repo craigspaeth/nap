@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "author": "Craig Spaeth <craigspaeth@gmail.com> (http://craigspaeth.com)",
   "description": "Compile and package your assets including stylesheets, javascripts, and client-side javascript templates for node.js",
   "keywords": [
