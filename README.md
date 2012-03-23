@@ -125,14 +125,6 @@ Calling nap.package() will concatenate all of the files in a package, minify, an
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the generated package file.
 
-### Middleware
-
-You can use nap as middleware in development to avoid redundant git diffs and quickly serve files in memory rather than writing to disk.
-
-````coffeescript
-app.use nap.middleware
-````
-
 ### Options
 
 * assets
