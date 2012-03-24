@@ -60,12 +60,12 @@ module.exports = (options = {}) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Script tag pointing to the ouput package(s)
 
-module.exports.js = (pkg, gzip = @gzip) =>
+module.exports.js = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.js'
-    src += '.jgz' if gzip
+    src += '.jgz' if @acceptsGzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
   output = ''
@@ -80,12 +80,12 @@ module.exports.js = (pkg, gzip = @gzip) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Style tag pointing to the ouput package(s)
 
-module.exports.css = (pkg, gzip = @gzip) =>
+module.exports.css = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.css'
-    src += '.cgz' if gzip
+    src += '.cgz' if @acceptsGzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
   output = ''
@@ -182,6 +182,8 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
 # serve the files in memory for development.
 
 module.exports.middleware = (req, res, next) =>
+  
+  @gzip = req.headers['accept-encoding'].toLowerCase().indexOf('gzip') isnt -1
   
   return unless @mode is 'development'
   
