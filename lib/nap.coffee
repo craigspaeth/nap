@@ -65,7 +65,7 @@ module.exports.js = (pkg) =>
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.js'
-    src += '.jgz' if @acceptsGzip
+    src += '.jgz' if @gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
   output = ''
@@ -85,7 +85,7 @@ module.exports.css = (pkg) =>
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.css'
-    src += '.cgz' if @acceptsGzip
+    src += '.cgz' if @gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
   output = ''
@@ -100,12 +100,12 @@ module.exports.css = (pkg) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Script tag pointing to the ouput JST script file
 
-module.exports.jst = (pkg, gzip = @gzip) =>
+module.exports.jst = (pkg) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.jst.js'
-    src += '.jgz' if gzip
+    src += '.jgz' if @gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
   unless @usingMiddleware
@@ -183,7 +183,8 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
 
 module.exports.middleware = (req, res, next) =>
   
-  @gzip = req.headers['accept-encoding'].toLowerCase().indexOf('gzip') isnt -1
+  if req.headers?
+    @gzip = req.headers['accept-encoding'].toLowerCase().indexOf('gzip') isnt -1
   
   return unless @mode is 'development'
   
