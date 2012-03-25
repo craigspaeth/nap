@@ -151,6 +151,14 @@ describe 'running the `js` function', ->
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.js('baz').should.equal "<script src='/assets/baz.js.jgz' type='text/javascript'></script>"
      
+    it 'doesnt have to point to the gzipped file', ->
+      nap
+        mode: 'production'
+        gzip: true
+        assets:
+          js:
+            baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+      nap.js('baz', false).should.equal "<script src='/assets/baz.js' type='text/javascript'></script>"
     
 describe 'running the `css` function', ->
   
@@ -579,3 +587,13 @@ describe '`middleware`',  ->
     nap.jst('foo')
     nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
     fs.readdirSync("#{process.cwd()}/public/assets").length.should.equal 0
+    
+  xit 'points to gzipped packages only if the headers allow it', (done) ->
+    nap
+      assets:
+        css:
+          foo: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
+    nap.middleware { url: '/assets/test/fixtures/1/foo.css' }, { end: (data) -> 
+      data.should.include 'background: #f00;'
+      done()
+    }, ->

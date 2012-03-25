@@ -60,12 +60,12 @@ module.exports = (options = {}) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Script tag pointing to the ouput package(s)
 
-module.exports.js = (pkg) =>
+module.exports.js = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.js'
-    src += '.jgz' if @gzip
+    src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
   output = ''
@@ -80,12 +80,12 @@ module.exports.js = (pkg) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Style tag pointing to the ouput package(s)
 
-module.exports.css = (pkg) =>
+module.exports.css = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.css'
-    src += '.cgz' if @gzip
+    src += '.cgz' if gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
   output = ''
@@ -100,12 +100,12 @@ module.exports.css = (pkg) =>
 # @param {String} pkg The name of the package to output
 # @return {String} Script tag pointing to the ouput JST script file
 
-module.exports.jst = (pkg) =>
+module.exports.jst = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.jst.js'
-    src += '.jgz' if @gzip
+    src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
   unless @usingMiddleware
