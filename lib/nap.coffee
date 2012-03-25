@@ -18,7 +18,7 @@ rimraf = require 'rimraf'
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages.
 # 
-# @param {Object} options A obj of configuration options
+# @param {Object} options An obj of configuration options
 # @return {Function} Returns itself for chainability
 
 module.exports = (options = {}) =>
@@ -54,11 +54,10 @@ module.exports = (options = {}) =>
   
   @
 
-# Run js pre-processors & output the files in dev.
-# Return link tags pointing to processed package or individual files.
+# Run js pre-processors & output the packages in dev.
 # 
 # @param {String} pkg The name of the package to output
-# @return {String} Script tag pointing to the ouput package(s)
+# @return {String} Script tag(s) pointing to the ouput package(s)
 
 module.exports.js = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
@@ -75,10 +74,9 @@ module.exports.js = (pkg, gzip = @gzip) =>
   output
   
 # Run css pre-processors & output the packages in dev.
-# Return link tags pointing to processed package or individual files.
 # 
 # @param {String} pkg The name of the package to output
-# @return {String} Style tag pointing to the ouput package(s)
+# @return {String} Link tag(s) pointing to the ouput package(s)
 
 module.exports.css = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
@@ -94,11 +92,10 @@ module.exports.css = (pkg, gzip = @gzip) =>
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
   
-# Compile the templates into JST['file/path'] : functionString pairs in dev.
-# Return the script tag pointing to the file.
+# Compile the templates into JST['file/path'] : functionString pairs in dev
 # 
 # @param {String} pkg The name of the package to output
-# @return {String} Script tag pointing to the ouput JST script file
+# @return {String} Script tag(s) pointing to the ouput JST script file(s)
 
 module.exports.jst = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
@@ -118,7 +115,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   """
 
 # Runs through all of the asset packages. Concatenates, minifies, and gzips them. Then outputs
-# the final packages to the outputDir. (To be run once during the build step for production)
+# the final packages. (To be run once during the build step for production)
 
 module.exports.package = (callback) =>
   
@@ -130,7 +127,7 @@ module.exports.package = (callback) =>
       contents = (contents for filename, contents of precompile pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.js', contents
-      gzipPkg contents, pkg + '.js', finishCallback
+      if @gzip then gzipPkg contents, pkg + '.js', finishCallback else finishCallback()
       total++
       
   if @assets.css?
@@ -140,7 +137,7 @@ module.exports.package = (callback) =>
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
       writeFile pkg + '.css', contents
-      gzipPkg contents, pkg + '.css', finishCallback
+      if @gzip then gzipPkg contents, pkg + '.css', finishCallback else finishCallback()
       total++
       
   if @assets.jst?
@@ -149,8 +146,30 @@ module.exports.package = (callback) =>
       contents = @_tmplFilePrefix + contents
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.jst.js', contents
-      gzipPkg contents, pkg + '.jst.js', finishCallback
+      if @gzip then gzipPkg contents, pkg + '.jst.js', finishCallback else finishCallback()
       total++
+
+# Instead of compiling & writing the packages to disk, nap will compile and serve the files in 
+# memory per request.
+
+module.exports.middleware = (req, res, next) =>
+  
+  return unless @mode is 'development'
+  
+  @usingMiddleware = true
+  
+  reqFName = req.url.replace('/assets/', '').split('.')[0]
+  reqFName = reqFName.split('.')[0..reqFName.length][0]
+  
+  for key, obj of @assets
+    for pkg, files of @assets[key]
+      for file in files
+        fName = file.split('.')[0..file.length][0]
+        if reqFName is fName
+          res.end precompileFile file
+          return
+  
+  next()
 
 # Creates a file with template functions packed into a JST namespace
 # 
@@ -177,50 +196,22 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   
   tmplFileContents
-
-# Instead of compiling & writing the files layed out in the asset packages, nap will compile and
-# serve the files in memory for development.
-
-module.exports.middleware = (req, res, next) =>
   
-  if req.headers?
-    @gzip = req.headers['accept-encoding'].toLowerCase().indexOf('gzip') isnt -1
-  
-  return unless @mode is 'development'
-  
-  @usingMiddleware = true
-  
-  reqFName = req.url.replace('/assets/', '').split('.')[0]
-  reqFName = reqFName.split('.')[0..reqFName.length][0]
-  
-  for key, obj of @assets
-    for pkg, files of @assets[key]
-      for file in files
-        fName = file.split('.')[0..file.length][0]
-        if reqFName is fName
-          res.end precompileFile file
-          return
-  
-  next()
-  
-# Gzips a package (used in nap.package to DRY things up)
+# Gzips a package.
 # 
 # @param {String} contents The new file contents
 # @param {String} filename The name of the new file
   
 gzipPkg = (contents, filename, callback) =>
-  if @gzip
-    file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
-    ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
-    exec "gzip #{file}", (err, stdout, stderr) ->
-      console.log stderr if stderr?
-      fs.renameSync file + '.gz', file + ext
-      writeFile filename, contents
-      callback()
-  else
+  file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+  ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
+  exec "gzip #{file}", (err, stdout, stderr) ->
+    console.log stderr if stderr?
+    fs.renameSync file + '.gz', file + ext
+    writeFile filename, contents
     callback()
 
-# Run a preprocessor based on the file extension.
+# Run a pre-processor based on the file extension.
 # 
 # @param {String} filename The name of the file to precompile
 # @return {String} The new file contents 
@@ -241,7 +232,7 @@ precompileFile = (filename) =>
   
   contents
 
-# Run any pre-processors on a package, and return a obj of { filename: compiledContents }
+# Run any pre-processors on a package, and return an obj of { filename: compiledContents }
 # 
 # @param {String} pkg The name of the package to precompile
 # @param {String} type Either 'js' or 'css'
@@ -267,6 +258,7 @@ precompile = (pkg, type) =>
 
 parseTmplToFn = (str, extension) =>
   switch extension
+  
     when 'jade'
       if @_tmplFilePrefix.indexOf jadeRuntime is -1
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
@@ -280,10 +272,10 @@ parseTmplToFn = (str, extension) =>
 # @return {String} The new full directory of the output file
 
 writeFile = (filename, contents) =>
-  dir = process.cwd() + @_outputDir + '/' + filename
-  p = path.dirname dir
-  mkdirp.sync p, 0755 unless path.existsSync p
-  fs.writeFileSync dir, contents ? ''
+  file = process.cwd() + @_outputDir + '/' + filename
+  dir = path.dirname file
+  mkdirp.sync dir, 0755 unless path.existsSync dir
+  fs.writeFileSync file, contents ? ''
 
 # Runs uglify js on a string of javascript
 # 
