@@ -200,9 +200,8 @@ module.exports.middleware = (req, res, next) =>
         if reqFName is fName
           res.end precompileFile file
           return
-        else
-          next()
-          return
+  
+  next()
   
 # Gzips a package (used in nap.package to DRY things up)
 # 
@@ -299,7 +298,7 @@ uglify = (str) ->
   ast = pro.ast_squeeze(ast)
   pro.gen_code(ast)
 
-# Given the contents of a css file, replace references to url() with base64 embedded images
+# Given the contents of a css file, replace references to url() with base64 embedded images & fonts.
 # 
 # @param {String} str The filename to replace
 # @param {String} str The CSS string to replace url()'s with

@@ -176,7 +176,11 @@ app.use(nap.middleware);
 
 ## Tests
 
-Nap uses [Mocha](https://github.com/visionmedia/mocha) for testing. Simply run `mocha` to run the test suite.
+Nap uses [Mocha](https://github.com/visionmedia/mocha) for testing. Simply run the mocha with coffeescript command to run tests.
+
+````
+mocha --compilers coffee:coffee-script
+````
 
 ## License
 

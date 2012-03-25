@@ -555,6 +555,16 @@ describe '`middleware`',  ->
       done()
     }, ->
       
+  it 'renders multiple files in a package in memory', (done) ->
+    nap
+      assets:
+        css:
+          foo: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
+    nap.middleware { url: '/assets/test/fixtures/1/foo.css' }, { end: (data) -> 
+      data.should.include 'background: #f00;'
+      done()
+    }, ->
+      
   it 'does not write files to disk', ->
     nap
       assets:
