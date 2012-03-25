@@ -587,6 +587,18 @@ describe '`middleware`',  ->
     nap.jst('foo')
     nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
     fs.readdirSync("#{process.cwd()}/public/assets").length.should.equal 0
+  
+  it 'just goes on to the next in production', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
+    calledNext = false
+    nap.middleware { url: '/assets/test/fixtures/1/foo.css' }, { end: (data) -> 
+      data.should.include 'background: #f00;'
+    }, -> calledNext = true
+    calledNext.should.be.ok
     
   xit 'points to gzipped packages only if the headers allow it', (done) ->
     nap

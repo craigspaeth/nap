@@ -154,7 +154,9 @@ module.exports.package = (callback) =>
 
 module.exports.middleware = (req, res, next) =>
   
-  return unless @mode is 'development'
+  unless @mode is 'development'
+    next()
+    return
   
   @usingMiddleware = true
   
