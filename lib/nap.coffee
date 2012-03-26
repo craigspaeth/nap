@@ -160,28 +160,29 @@ module.exports.middleware = (req, res, next) =>
   
   @usingMiddleware = true
   
-  if req.url.match /\.jst\.js$/
-    pkg = path.basename req.url, '.jst.js'
-    res.end generateJSTs pkg
-    return
-    
-  if req.url.match /nap-templates-prefix\.js$/
-    res.end @_tmplFilePrefix
-    return
-  
   if path.extname(req.url) is '.css'
+    res.setHeader?("Content-Type", "text/css")
     for pkg, files of @assets.css
       for file in files
-        fName = file.split('.')[0..file.length][0]
-        if path.basename(req.url, '.css') is path.basename(fName)
+        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is file.replace(/.(?!.*\.).*/, '')
           res.end precompileFile(file)
           return
           
   if path.extname(req.url) is '.js'
+    res.setHeader?("Content-Type", "application/javascript")
+    
+    if req.url.match /\.jst\.js$/
+      pkg = path.basename req.url, '.jst.js'
+      res.end generateJSTs pkg
+      return
+
+    if req.url.match /nap-templates-prefix\.js$/
+      res.end @_tmplFilePrefix
+      return
+    
     for pkg, files of @assets.js
       for file in files
-        fName = file.split('.')[0..file.length][0]
-        if path.basename(req.url, '.js') is path.basename(fName)
+        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is file.replace(/.(?!.*\.).*/, '')
           res.end precompileFile(file)
           return
   

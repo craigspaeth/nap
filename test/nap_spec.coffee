@@ -613,6 +613,19 @@ describe '`middleware`',  ->
       data.should.include "window.JST ="
     }
     
+  it 'sets proper headers', ->
+    nap
+      assets:
+        css:
+          all: ['/text/fixtures/1/foo.styl']
+        jst:
+          foo: ['/test/fixtures/1/foo.jade']
+    nap.middleware { url: '/assets/test/fixtures/1/nap-templates-prefix.js' },
+      setHeader: (key, val) ->
+        key.should.equal 'Content-Type'
+        val.should.equal "application/javascript"
+      end: (data) ->
+    
   xit 'points to gzipped packages only if the headers allow it', (done) ->
     nap
       assets:
