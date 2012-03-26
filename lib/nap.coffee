@@ -160,9 +160,6 @@ module.exports.middleware = (req, res, next) =>
   
   @usingMiddleware = true
   
-  reqFName = req.url.replace('/assets/', '').split('.')[0]
-  reqFName = reqFName.split('.')[0..reqFName.length][0]
-  
   if req.url.match /\.jst\.js$/
     pkg = path.basename req.url, '.jst.js'
     res.end generateJSTs pkg
@@ -172,12 +169,20 @@ module.exports.middleware = (req, res, next) =>
     res.end @_tmplFilePrefix
     return
   
-  for key, obj of @assets
-    for pkg, files of @assets[key]
+  if path.extname(req.url) is '.css'
+    for pkg, files of @assets.css
       for file in files
         fName = file.split('.')[0..file.length][0]
-        if reqFName is fName
-          res.end precompileFile file if key is 'js' or key is 'css'
+        if path.basename(req.url, '.css') is path.basename(fName)
+          res.end precompileFile(file)
+          return
+          
+  if path.extname(req.url) is '.js'
+    for pkg, files of @assets.js
+      for file in files
+        fName = file.split('.')[0..file.length][0]
+        if path.basename(req.url, '.js') is path.basename(fName)
+          res.end precompileFile(file)
           return
   
   next()
