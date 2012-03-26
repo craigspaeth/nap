@@ -167,7 +167,7 @@ module.exports.middleware = (req, res, next) =>
         if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is file.replace(/.(?!.*\.).*/, '')
           res.end precompileFile(file)
           return
-          
+  
   if path.extname(req.url) is '.js'
     res.setHeader?("Content-Type", "application/javascript")
     
