@@ -551,6 +551,16 @@ describe '`package`', ->
     nap.package ->
       path.existsSync '/public/assets/default.css.cgz'
       done()
+  
+  it 'adds the jade runtime', ->
+    nap
+      mode: 'production'
+      assets:
+        jst:
+          templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+    nap.package()
+    fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
+      .should.include "var jade="
       
 describe '`middleware`',  ->
   
