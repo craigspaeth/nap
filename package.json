@@ -23,7 +23,6 @@
     "underscore": "*",
     "underscore.string": "*",
     "jade": "*",
-    "hogan": "*",
     "stylus": "*",
     "nib": "*",
     "uglify-js": "*",

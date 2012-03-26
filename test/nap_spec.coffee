@@ -400,17 +400,6 @@ describe 'running the `jst` function', ->
       fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
         .indexOf("JST['index/foo']").should.not.equal -1
     
-    describe 'using hogan', ->
-      
-      it 'compiles hogan templates into JST functions', ->
-        nap
-          assets:
-            jst:
-              foo: ['/test/fixtures/1/foo.hogan']
-        nap.jst('foo')
-        fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-          .indexOf("<h1>Hello").should.not.equal -1
-    
     describe 'using jade', ->
       
       it 'adds the jade runtime by default', ->

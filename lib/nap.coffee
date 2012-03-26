@@ -14,7 +14,6 @@ mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 glob = require 'glob'
 rimraf = require 'rimraf'
-Hogan = require 'Hogan'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages.
@@ -275,9 +274,6 @@ parseTmplToFn = (str, extension) =>
       if @_tmplFilePrefix.indexOf jadeRuntime is -1
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
       return jade.compile(str, { client: true, compileDebug: true })
-    
-    when 'hogan'
-      return Hogan.compile(str, { asString: true })
       
 # Given a filename creates the sub directories it's in if it doesn't exist. And write it to the
 # output path.
