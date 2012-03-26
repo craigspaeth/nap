@@ -14,6 +14,7 @@ mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 glob = require 'glob'
 rimraf = require 'rimraf'
+Hogan = require 'Hogan'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages.
@@ -163,12 +164,21 @@ module.exports.middleware = (req, res, next) =>
   reqFName = req.url.replace('/assets/', '').split('.')[0]
   reqFName = reqFName.split('.')[0..reqFName.length][0]
   
+  if req.url.match /\.jst\.js$/
+    pkg = path.basename req.url, '.jst.js'
+    res.end generateJSTs pkg
+    return
+    
+  if req.url.match /nap-templates-prefix\.js$/
+    res.end @_tmplFilePrefix
+    return
+  
   for key, obj of @assets
     for pkg, files of @assets[key]
       for file in files
         fName = file.split('.')[0..file.length][0]
         if reqFName is fName
-          res.end precompileFile file
+          res.end precompileFile file if key is 'js' or key is 'css'
           return
   
   next()
@@ -265,7 +275,10 @@ parseTmplToFn = (str, extension) =>
       if @_tmplFilePrefix.indexOf jadeRuntime is -1
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
       return jade.compile(str, { client: true, compileDebug: true })
-
+    
+    when 'hogan'
+      return Hogan.compile(str, { asString: true })
+      
 # Given a filename creates the sub directories it's in if it doesn't exist. And write it to the
 # output path.
 # 

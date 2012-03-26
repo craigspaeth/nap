@@ -8,7 +8,7 @@ nap
     css: 
       default: ['/app/stylesheets/bar.styl']
     jst: 
-      default: ['/app/templates/hello.jade']
+      default: ['/app/templates/hello.hogan']
 
 app = module.exports = express.createServer()
 app.configure ->

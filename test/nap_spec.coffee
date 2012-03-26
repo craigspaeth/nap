@@ -379,8 +379,8 @@ describe 'running the `jst` function', ->
     nap.jst('foo').should.include "<script src='/assets/foo.jst.js' type='text/javascript'></script>"
   
   describe 'in development', ->
-  
-    describe 'using jade', ->
+    
+    describe 'using JSTs', ->
       
       it 'creates a seperate prefix file with the namespace', ->
         nap
@@ -389,7 +389,29 @@ describe 'running the `jst` function', ->
               foo: ['/test/fixtures/1/foo.jade']
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/nap-templates-prefix.js').toString()
-          .should.include "window.JST" 
+          .should.include "window.JST"
+          
+    it 'puts the JST functions into namespaces starting from the templates directory', ->
+      nap
+        assets:
+          jst:
+            foo: ['/test/fixtures/templates/index/foo.jade']
+      nap.jst('foo')
+      fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+        .indexOf("JST['index/foo']").should.not.equal -1
+    
+    describe 'using hogan', ->
+      
+      it 'compiles hogan templates into JST functions', ->
+        nap
+          assets:
+            jst:
+              foo: ['/test/fixtures/1/foo.hogan']
+        nap.jst('foo')
+        fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+          .indexOf("<h1>Hello").should.not.equal -1
+    
+    describe 'using jade', ->
       
       it 'adds the jade runtime by default', ->
         nap
@@ -408,15 +430,6 @@ describe 'running the `jst` function', ->
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
           .indexOf("buf.push('<h2>Hello").should.not.equal -1
-        
-    it 'puts the JST functions into namespaces starting from the templates directory', ->
-      nap
-        assets:
-          jst:
-            foo: ['/test/fixtures/templates/index/foo.jade']
-      nap.jst('foo')
-      fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-        .indexOf("JST['index/foo']").should.not.equal -1
         
   describe 'in production', ->
   
@@ -540,7 +553,6 @@ describe '`package`', ->
     jstOut.indexOf("<h1>").should.not.equal -1
     
   it 'will create gzip versions of assets if specified', (done) ->
-    exec 'rm -rf public/assets/'
     nap
       embedImages: true
       gzip: true
@@ -599,6 +611,18 @@ describe '`middleware`',  ->
       data.should.include 'background: #f00;'
     }, -> calledNext = true
     calledNext.should.be.ok
+    
+  it 'serves up the jst files as well', ->
+    nap
+      assets:
+        jst:
+          foo: ['/test/fixtures/1/foo.jade']
+    nap.middleware { url: '/assets/test/fixtures/1/foo.jst.js' }, { end: (data) -> 
+      data.should.include "JST['foo'] = function"
+    }
+    nap.middleware { url: '/assets/test/fixtures/1/nap-templates-prefix.js' }, { end: (data) -> 
+      data.should.include "window.JST ="
+    }
     
   xit 'points to gzipped packages only if the headers allow it', (done) ->
     nap

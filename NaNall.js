@@ -1,1 +1,0 @@
-(function(){var a;a="foo"}).call(this);var foo="foo"

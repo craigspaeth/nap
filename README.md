@@ -150,7 +150,7 @@ Nap has two modes 'development' and 'production'.
 
 ### Development
 
-In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.g
+In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
 
 ### Production
   
@@ -164,12 +164,12 @@ You may also gzip, embed images & fonts, and point to a CDN. See **options** abo
 
 ## Middleware
 
-Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'gdevelopment' mode only)
+Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'development' mode only)
 
 ````javascript
-nap = require('nap');
-express = require("express");
-app = express.createServer();
+var nap = require('nap')
+  , express = require("express")
+  , app = express.createServer();
 
 app.use(nap.middleware);
 ````
