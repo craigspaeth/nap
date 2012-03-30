@@ -1,6 +1,6 @@
 # Node Asset Packager
 
-(nap) Node Asset Packager helps compile, manage, & package stylesheets, javascripts, and javascript templates for node.js
+(nap) Node Asset Packager helps compile, manage, & package stylesheets, javascripts, and javascript templates for node.js.
 
 ## Example
 
