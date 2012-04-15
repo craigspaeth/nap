@@ -72,7 +72,7 @@ Some express.js app based examples can be found in the [examples folder](https:/
 
 ## Usage
 
-To make things easy nap assumes you have a */public* folder (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside */public/assets*.
+To make things easy nap assumes you have a */public* folder to serve static assets (like an Express.js or Ruby on Rails public folder) so that nap can generate & reference assets inside */public/assets*.
 
 Simply pass a set of options to the main `nap` function to configure your asset packages. Then use one of nap's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`) to output `<script>` and `<style> ` tags into your server-side templates.
 
