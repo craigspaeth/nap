@@ -129,20 +129,46 @@ nap({
 
 Nap will automatically precompile any javascript and css pre-processors based on the file extension.
 
-Nap currently only supports the following pre-processors. But please feel free to contribute more.
-  
+Nap currently only supports the following pre-processors by default. But please feel free to contribute more.
+
   * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
   * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
+  
+## Adding your own preprocessors
+
+You can add your own preprocessors to nap by extending `nap.preprocessors`, with a fileExtension: preprocessFunction pair.
+
+e.g.
+
+````javascript
+var nap = require('nap')
+  , coffee = require('coffee-script');
+nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(contents) };
+````
 
 ## Client-side Javascript Templating (JSTs) 
 
-*jst* packages will run the appropriate template engine parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
+*jst* packages will run the appropriate template parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
 
 e.g. The template *app/templates/artwork/detail.jade* will be parsed using jade and can be rendered on the client-side by calling `JST['artwork/detail']({ title: 'Mona Lisa' })`
 
-Nap currently only supports the following templating engines. But please feel free to contribute more.
+Nap currently only supports the following template parsers by default. But please feel free to contribute more.
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
+
+## Adding your own template parsers
+
+You can add your own template parsers to nap by extending `nap.templateParsers`, with a fileExtension: templateParserFunction pair.
+
+e.g.
+
+````javascript
+var nap = require('nap')
+  , jade = require('jade');
+nap.templateParsers['.jade'] = function(contents) { 
+  return jade.compile(contents, { client: true, compileDebug: true }); 
+};
+````
 
 ## Nap Modes
 

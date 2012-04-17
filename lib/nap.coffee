@@ -41,7 +41,7 @@ module.exports = (options = {}) =>
   @embedImages = options.embedImages ? false
   @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
-  @_tmplFilePrefix = 'window.JST = {};\n'
+  @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
   
@@ -51,6 +51,13 @@ module.exports = (options = {}) =>
   # Clear out assets directory and start fresh
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
   fs.mkdirSync process.cwd() + @_outputDir, 0o0755
+  
+  # Add any javascript necessary for templates (like the jade runtime)
+  for filename in _.flatten @assets.jst
+    ext = path.extname(filename)
+    switch ext
+      
+      when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
   
   @
 
@@ -107,7 +114,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   
   unless @usingMiddleware
     fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
-    fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplFilePrefix
+    fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplPrefix
   
   """
   <script src='#{@_assetsDir}/nap-templates-prefix.js' type='text/javascript'></script>
@@ -143,7 +150,7 @@ module.exports.package = (callback) =>
   if @assets.jst?
     for pkg, files of @assets.jst
       contents = generateJSTs pkg
-      contents = @_tmplFilePrefix + contents
+      contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.jst.js', contents
       if @gzip then gzipPkg contents, pkg + '.jst.js', finishCallback else finishCallback()
@@ -179,7 +186,7 @@ module.exports.middleware = (req, res, next) =>
       return
 
     if req.url.match /nap-templates-prefix\.js$/
-      res.end @_tmplFilePrefix
+      res.end @_tmplPrefix
       return
     
     for pkg, filenames of @assets.js
@@ -191,32 +198,6 @@ module.exports.middleware = (req, res, next) =>
           return
   
   next()
-
-# Creates a file with template functions packed into a JST namespace
-# 
-# @param {String} pkg The package name to generate from
-# @return {String} The new JST file contents
-
-module.exports.generateJSTs = generateJSTs = (pkg) =>
-  
-  tmplFileContents = ''
-  
-  for filename in @assets.jst[pkg]
-    
-    # Read the file and compile it into a javascript function string
-    extension = _.last filename.split('.')
-    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-    contents = parseTmplToFn(contents, extension).toString()
-    
-    # Templates in a 'templates' folder are namespaced by folder after 'templates'
-    if filename.indexOf('templates') > -1
-      namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
-    else
-      namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
-    
-    tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
-  
-  tmplFileContents
 
 # An obj of default fileExtension: preprocessFunction pairs
 # The preprocess function takes contents, [filename] and returns the preprocessed contents
@@ -235,6 +216,50 @@ module.exports.preprocessors = preprocessors =
         contents = out
     contents
 
+# An obj of default fileExtension: templateParserFunction pairs
+# The templateParserFunction function takes contents, [filename] and returns the parsed contents
+
+module.exports.templateParsers = templateParsers =
+  
+  '.jade': (contents, filename) ->
+    jade.compile(contents, { client: true, compileDebug: true })
+
+# Generates javascript template functions packed into a JST namespace
+# 
+# @param {String} pkg The package name to generate from
+# @return {String} The new JST file contents
+
+module.exports.generateJSTs = generateJSTs = (pkg) =>
+  
+  tmplFileContents = ''
+  
+  for filename in @assets.jst[pkg]
+    
+    # Read the file and compile it into a javascript function string
+    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    contents = parseTmplToFn(contents, filename).toString()
+    
+    # Templates in a 'templates' folder are namespaced by folder after 'templates'
+    if filename.indexOf('templates') > -1
+      namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
+    else
+      namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
+    
+    tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
+  
+  tmplFileContents
+
+# A function that takes a template and parses it into function meant to be run on the 
+# client side.
+# 
+# @param {String} str Contents of the template string to be parsed
+# @param {String} extension The file extension to determine which template engine
+# @return {Function} Accepts template vars and is meant to be run on the client-side
+
+parseTmplToFn = (contents, filename) =>
+  ext = path.extname filename
+  if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
+
 # Run a preprocessor or pass through the contents
 # 
 # @param {String} filename The name of the file to preprocess
@@ -244,20 +269,6 @@ module.exports.preprocessors = preprocessors =
 preprocess = (contents, filename) =>
   ext = path.extname filename
   if preprocessors[ext]? then preprocessors[ext](contents, filename) else contents 
-
-# Gzips a package.
-# 
-# @param {String} contents The new file contents
-# @param {String} filename The name of the new file
-  
-gzipPkg = (contents, filename, callback) =>
-  file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
-  ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
-  exec "gzip #{file}", (err, stdout, stderr) ->
-    console.log stderr if stderr?
-    fs.renameSync file + '.gz', file + ext
-    writeFile filename, contents
-    callback()
 
 # Run any pre-processors on a package, and return an obj of { filename: compiledContents }
 # 
@@ -276,21 +287,6 @@ preprocessPkg = (pkg, type) =>
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
-
-# A function that takes a template string and parses it into function meant to be run on the 
-# client side.
-# 
-# @param {String} str Contents of the template string to be parsed
-# @param {String} extension The file extension to determine which template engine
-# @return {Function} Accepts template vars and is meant to be run on the client-side
-
-parseTmplToFn = (str, extension) =>
-  switch extension
-  
-    when 'jade'
-      if @_tmplFilePrefix.indexOf jadeRuntime is -1
-        @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
-      return jade.compile(str, { client: true, compileDebug: true })
       
 # Given a filename creates the sub directories it's in, if it doesn't exist. And writes it to the
 # @_outputDir.
@@ -381,6 +377,20 @@ embedFiles = (filename, contents) =>
     offsetContents = contents.substring(offset, contents.length)
 
   return contents
+
+# Gzips a package.
+# 
+# @param {String} contents The new file contents
+# @param {String} filename The name of the new file
+  
+gzipPkg = (contents, filename, callback) =>
+  file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+  ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
+  exec "gzip #{file}", (err, stdout, stderr) ->
+    console.log stderr if stderr?
+    fs.renameSync file + '.gz', file + ext
+    writeFile filename, contents
+    callback()
 
 # Given a list of file strings, replaces the globs with the appropriate matches
 # 

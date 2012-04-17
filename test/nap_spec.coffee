@@ -577,6 +577,19 @@ describe 'preprocessors', ->
       .toString().should.equal (
         "Sometimes I just want to (╯°□°)╯︵ ┻━┻ Magic the Gathering can make me mad enough to (╯°□°)╯︵ ┻━┻ "
       )
+      
+describe 'templateParsers', ->
+  
+  it 'you can add your own template parsers', ->
+    nap
+      assets:
+        jst:
+          foo: ['/test/fixtures/templates/index/foo.fliptable']
+    nap.templateParsers['.fliptable'] = (contents) ->
+      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split('\n')).join('')
+    nap.jst('foo')
+    fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+      .should.include "(╯°□°)╯︵ ┻━┻"
      
 describe '`middleware`',  ->
   
