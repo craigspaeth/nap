@@ -134,7 +134,7 @@ Nap currently only supports the following pre-processors by default. But please 
   * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
   * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
   
-## Adding your own preprocessors
+### Adding your own preprocessors
 
 You can add your own preprocessors to nap by extending `nap.preprocessors`, with a fileExtension: preprocessFunction pair.
 
@@ -156,7 +156,7 @@ Nap currently only supports the following template parsers by default. But pleas
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
 
-## Adding your own template parsers
+### Adding your own template parsers
 
 You can add your own template parsers to nap by extending `nap.templateParsers`, with a fileExtension: templateParserFunction pair.
 
