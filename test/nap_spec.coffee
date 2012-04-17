@@ -4,6 +4,7 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
+twss = require('twss')
 
 describe 'options.publicDir', ->
 
@@ -561,7 +562,22 @@ describe '`package`', ->
     nap.package()
     fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
       .should.include "var jade="
-      
+
+describe 'preprocessors', ->
+  
+  it 'you can add your own preprocessors', ->
+    nap
+      assets:
+        css:
+          tables: ['/test/fixtures/1/foo.fliptable']
+    nap.preprocessors['.fliptable'] = (contents) ->
+      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split('\n')).join('')
+    nap.css('tables')
+    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
+      .toString().should.equal (
+        "Sometimes I just want to (╯°□°)╯︵ ┻━┻ Magic the Gathering can make me mad enough to (╯°□°)╯︵ ┻━┻ "
+      )
+     
 describe '`middleware`',  ->
   
   it 'renders a package in memory', (done) ->

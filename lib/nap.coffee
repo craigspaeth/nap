@@ -50,7 +50,7 @@ module.exports = (options = {}) =>
   
   # Clear out assets directory and start fresh
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync process.cwd() + @_outputDir, 0777
+  fs.mkdirSync process.cwd() + @_outputDir, 0o0755
   
   @
 
@@ -68,7 +68,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
     return "<script src='#{src}' type='text/javascript'></script>"
   
   output = ''
-  for filename, contents of precompile pkg, 'js'
+  for filename, contents of preprocessPkg pkg, 'js'
     writeFile filename, contents unless @usingMiddleware
     output += "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
   output
@@ -87,7 +87,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
   output = ''
-  for filename, contents of precompile pkg, 'css'
+  for filename, contents of preprocessPkg pkg, 'css'
     writeFile filename, embedFiles filename, contents unless @usingMiddleware
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
@@ -124,7 +124,7 @@ module.exports.package = (callback) =>
   
   if @assets.js?
     for pkg, files of @assets.js
-      contents = (contents for filename, contents of precompile pkg, 'js').join('')
+      contents = (contents for filename, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
       writeFile pkg + '.js', contents
       if @gzip then gzipPkg contents, pkg + '.js', finishCallback else finishCallback()
@@ -132,7 +132,7 @@ module.exports.package = (callback) =>
       
   if @assets.css?
     for pkg, files of @assets.css 
-      contents = (for filename, contents of precompile pkg, 'css'
+      contents = (for filename, contents of preprocessPkg pkg, 'css'
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
@@ -162,10 +162,12 @@ module.exports.middleware = (req, res, next) =>
   
   if path.extname(req.url) is '.css'
     res.setHeader?("Content-Type", "text/css")
-    for pkg, files of @assets.css
-      for file in files
-        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is file.replace(/.(?!.*\.).*/, '')
-          res.end precompileFile(file)
+    for pkg, filenames of @assets.css
+      for filename in filenames
+        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
+          contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+          contents = preprocess contents, filename
+          res.end contents
           return
   
   if path.extname(req.url) is '.js'
@@ -180,10 +182,12 @@ module.exports.middleware = (req, res, next) =>
       res.end @_tmplFilePrefix
       return
     
-    for pkg, files of @assets.js
-      for file in files
-        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is file.replace(/.(?!.*\.).*/, '')
-          res.end precompileFile(file)
+    for pkg, filenames of @assets.js
+      for filename in filenames
+        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
+          contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+          contents = preprocess contents, filename
+          res.end contents
           return
   
   next()
@@ -213,7 +217,34 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   
   tmplFileContents
+
+# An obj of default fileExtension: preprocessFunction pairs
+# The preprocess function takes contents, [filename] and returns the preprocessed contents
+
+module.exports.preprocessors = preprocessors =
   
+  '.coffee': (contents, filename) ->
+    coffee.compile contents
+  
+  '.styl': (contents, filename) ->
+    styl(contents)
+      .set('filename', process.cwd() + '/' + filename)
+      .use(nib())
+      .render (err, out) ->
+        throw(err) if err
+        contents = out
+    contents
+
+# Run a preprocessor or pass through the contents
+# 
+# @param {String} filename The name of the file to preprocess
+# @param {String} filename The contents of the file to preprocess
+# @return {String} The new file contents 
+
+preprocess = (contents, filename) =>
+  ext = path.extname filename
+  if preprocessors[ext]? then preprocessors[ext](contents, filename) else contents 
+
 # Gzips a package.
 # 
 # @param {String} contents The new file contents
@@ -228,39 +259,19 @@ gzipPkg = (contents, filename, callback) =>
     writeFile filename, contents
     callback()
 
-# Run a pre-processor based on the file extension.
-# 
-# @param {String} filename The name of the file to precompile
-# @return {String} The new file contents 
-
-precompileFile = (filename) =>
-  contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-  
-  if filename.match /\.coffee$/
-    contents = coffee.compile contents
-  
-  if filename.match /\.styl$/
-    styl(contents)
-      .set('filename', process.cwd() + '/' + filename)
-      .use(nib())
-      .render (err, out) ->
-        throw(err) if err
-        contents = out
-  
-  contents
-
 # Run any pre-processors on a package, and return an obj of { filename: compiledContents }
 # 
-# @param {String} pkg The name of the package to precompile
+# @param {String} pkg The name of the package to preprocess
 # @param {String} type Either 'js' or 'css'
 # @return {Object} A { filename: compiledContents } obj 
 
-precompile = (pkg, type) =>
+preprocessPkg = (pkg, type) =>
   
   obj = {}
   
   for filename in @assets[type][pkg]
-    contents = precompileFile filename
+    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    contents = preprocess contents, filename
     
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
@@ -281,8 +292,8 @@ parseTmplToFn = (str, extension) =>
         @_tmplFilePrefix = jadeRuntime + "\n" + @_tmplFilePrefix
       return jade.compile(str, { client: true, compileDebug: true })
       
-# Given a filename creates the sub directories it's in if it doesn't exist. And write it to the
-# output path.
+# Given a filename creates the sub directories it's in, if it doesn't exist. And writes it to the
+# @_outputDir.
 # 
 # @param {String} filename Filename of the css/js/jst file to be output
 # @param {String} contents Contents of the file to be output
@@ -291,7 +302,7 @@ parseTmplToFn = (str, extension) =>
 writeFile = (filename, contents) =>
   file = process.cwd() + @_outputDir + '/' + filename
   dir = path.dirname file
-  mkdirp.sync dir, 0755 unless path.existsSync dir
+  mkdirp.sync dir, 0o0755 unless path.existsSync dir
   fs.writeFileSync file, contents ? ''
 
 # Runs uglify js on a string of javascript
