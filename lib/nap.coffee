@@ -50,7 +50,9 @@ module.exports = (options = {}) =>
   
   # Clear out assets directory and start fresh
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync process.cwd() + @_outputDir, 0o0755
+  unless @usingMiddleware
+    fs.mkdirSync process.cwd() + @_outputDir, 0o0755
+    fs.writeFileSync "#{process.cwd()}/#{@_outputDir}/.gitignore", "/*"
   
   # Add any javascript necessary for templates (like the jade runtime)
   for filename in _.flatten @assets.jst

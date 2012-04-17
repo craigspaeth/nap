@@ -6,6 +6,15 @@ wrench = require 'wrench'
 exec = require('child_process').exec
 twss = require('twss')
 
+describe 'init', ->
+  
+  it 'will set up a clear assets directory with a gitignore', ->
+    nap(assets: {}, publicDir: '/test/fixtures/')
+    dir = process.cwd() + '/test/fixtures/assets'
+    exists = path.existsSync dir
+    exists.should.be.ok
+    fs.readFileSync(process.cwd() + '/test/fixtures/assets/.gitignore', 'UTF8').should.equal '/*'
+
 describe 'options.publicDir', ->
 
   it "will default to '/public'", ->
@@ -22,8 +31,7 @@ describe 'options.publicDir', ->
     nap(assets: {}, publicDir: '/test/fixtures/')
     dir = process.cwd() + '/test/fixtures/assets'
     exists = path.existsSync dir
-    exists.should.be.ok
-    fs.rmdirSync(dir) if exists
+    exists.should.be.ok 
     
 describe 'mode', ->
 
@@ -626,7 +634,7 @@ describe '`middleware`',  ->
     nap.js('foo')
     nap.jst('foo')
     nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
-    fs.readdirSync("#{process.cwd()}/public/assets").length.should.equal 0
+    path.existsSync("#{process.cwd()}/public/assets").should.not.be.ok
   
   it 'just goes on to the next in production', ->
     nap
