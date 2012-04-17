@@ -239,7 +239,9 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     
     # Read the file and compile it into a javascript function string
     contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-    contents = parseTmplToFn(contents, filename).toString()
+    ext = path.extname filename
+    contents = if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
+    
     
     # Templates in a 'templates' folder are namespaced by folder after 'templates'
     if filename.indexOf('templates') > -1
@@ -250,17 +252,6 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   
   tmplFileContents
-
-# A function that takes a template and parses it into function meant to be run on the 
-# client side.
-# 
-# @param {String} str Contents of the template string to be parsed
-# @param {String} extension The file extension to determine which template engine
-# @return {Function} Accepts template vars and is meant to be run on the client-side
-
-parseTmplToFn = (contents, filename) =>
-  ext = path.extname filename
-  if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
 
 # Run a preprocessor or pass through the contents
 # 
