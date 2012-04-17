@@ -22,13 +22,17 @@ rimraf = require 'rimraf'
 # @return {Function} Returns itself for chainability
 
 module.exports = (options = {}) =>
-
+  
   # Expand asset globs
   @assets = options.assets
   unless @assets?
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
   for key, obj of @assets
-    @assets[key][pkg] = replaceGlobs(files) for pkg, files of @assets[key]
+    for pkg, files of @assets[key]
+      files = (glob.sync("#{process.cwd()}/#{file}") for file in files)
+      files = _.uniq _.flatten files
+      files = (file.replace(process.cwd(), '').replace(/^\//, '') for file in files)
+      @assets[key][pkg] = files
   
   # Config defaults
   @publicDir = options.publicDir ? '/public'
@@ -242,7 +246,6 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     ext = path.extname filename
     contents = if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
     
-    
     # Templates in a 'templates' folder are namespaced by folder after 'templates'
     if filename.indexOf('templates') > -1
       namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
@@ -384,15 +387,3 @@ gzipPkg = (contents, filename, callback) =>
     fs.renameSync file + '.gz', file + ext
     writeFile filename, contents
     callback()
-
-# Given a list of file strings, replaces the globs with the appropriate matches
-# 
-# @param {Array} files
-# @return {Array} Filename strings
-
-replaceGlobs = (files) ->
-  files = (process.cwd().replace(/\/$/, '') + '/' + file.replace /^\//, '' for file in files)
-  files = (glob.sync(file) for file in files)
-  files = _.uniq _.flatten files
-  files = (file.replace(process.cwd(), '').replace(/^\//, '') for file in files)
-  files
