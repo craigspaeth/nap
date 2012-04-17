@@ -19,7 +19,7 @@
     "node": ">= 0.4.0"
   },
   "dependencies": {
-    "coffee-script": "~1.2",
+    "coffee-script": "*",
     "underscore": "*",
     "underscore.string": "*",
     "jade": "*",

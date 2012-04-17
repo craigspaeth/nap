@@ -55,7 +55,7 @@ module.exports = (options = {}) =>
   # Clear out assets directory and start fresh
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
   unless @usingMiddleware
-    fs.mkdirSync process.cwd() + @_outputDir, 0o0755
+    fs.mkdirSync process.cwd() + @_outputDir, '0755'
     fs.writeFileSync "#{process.cwd()}/#{@_outputDir}/.gitignore", "/*"
   
   # Add any javascript necessary for templates (like the jade runtime)
@@ -294,7 +294,7 @@ preprocessPkg = (pkg, type) =>
 writeFile = (filename, contents) =>
   file = process.cwd() + @_outputDir + '/' + filename
   dir = path.dirname file
-  mkdirp.sync dir, 0o0755 unless path.existsSync dir
+  mkdirp.sync dir, '0755' unless path.existsSync dir
   fs.writeFileSync file, contents ? ''
 
 # Runs uglify js on a string of javascript
