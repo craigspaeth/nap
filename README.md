@@ -190,7 +190,7 @@ You may also gzip, embed images & fonts, and point to a CDN. See **options** abo
 
 ## Middleware
 
-Use nap as middleware to quickly serve files in memory rather than writing to disk and avoid redundant git diffs. (In 'development' mode only)
+Use nap as middleware to quickly serve files in memory rather than writing to disk. (In 'development' mode only)
 
 ````javascript
 var nap = require('nap')
