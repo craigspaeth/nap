@@ -27,13 +27,17 @@ module.exports = (options = {}) =>
   @assets = options.assets
   unless @assets?
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
+  appDir = process.cwd().replace(/\\/g, "\/")
   for key, obj of @assets
-    for pkg, files of @assets[key]
-      files = (glob.sync("#{process.cwd()}/#{file}") for file in files)
-      files = _.uniq _.flatten files
-      files = (file.replace(process.cwd(), '').replace(/^\//, '') for file in files)
-      @assets[key][pkg] = files
-  
+    for pkg, patterns of @assets[key]
+      matches = []
+      for pattern in patterns
+        fnd = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
+        matches = matches.concat(fnd) 
+      matches = _.uniq _.flatten matches
+      matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
+      @assets[key][pkg] = matches
+
   # Config defaults
   @publicDir = options.publicDir ? '/public'
   @mode = options.mode ? do ->
@@ -172,36 +176,38 @@ module.exports.middleware = (req, res, next) =>
     return
   
   @usingMiddleware = true
-  
-  if path.extname(req.url) is '.css'
-    res.setHeader?("Content-Type", "text/css")
-    for pkg, filenames of @assets.css
-      for filename in filenames
-        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-          contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-          contents = preprocess contents, filename
-          res.end contents
-          return
-  
-  if path.extname(req.url) is '.js'
-    res.setHeader?("Content-Type", "application/javascript")
-    
-    if req.url.match /\.jst\.js$/
-      pkg = path.basename req.url, '.jst.js'
-      res.end generateJSTs pkg
-      return
 
-    if req.url.match /nap-templates-prefix\.js$/
-      res.end @_tmplPrefix
-      return
+  switch path.extname req.url
+  
+    when '.css'
+      res.setHeader?("Content-Type", "text/css")
+      for pkg, filenames of @assets.css
+        for filename in filenames
+          if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
+            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = preprocess contents, filename
+            res.end contents
+            return
+
+    when '.js'
+      res.setHeader?("Content-Type", "application/javascript")
+      
+      if req.url.match /\.jst\.js$/
+        pkg = path.basename req.url, '.jst.js'
+        res.end generateJSTs pkg
+        return
+
+      if req.url.match /nap-templates-prefix\.js$/
+        res.end @_tmplPrefix
+        return
     
-    for pkg, filenames of @assets.js
-      for filename in filenames
-        if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-          contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
-          contents = preprocess contents, filename
-          res.end contents
-          return
+      for pkg, filenames of @assets.js
+        for filename in filenames
+          if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
+            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = preprocess contents, filename
+            res.end contents
+            return
   
   next()
 
@@ -242,7 +248,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   for filename in @assets.jst[pkg]
     
     # Read the file and compile it into a javascript function string
-    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
     ext = path.extname filename
     contents = if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
     
@@ -277,7 +283,7 @@ preprocessPkg = (pkg, type) =>
   obj = {}
   
   for filename in @assets[type][pkg]
-    contents = fs.readFileSync(process.cwd() + '/' + filename).toString()
+    contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
     contents = preprocess contents, filename
     
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
@@ -359,7 +365,7 @@ embedFiles = (filename, contents) =>
     
     if mime?    
       if path.existsSync filename
-        base64Str = fs.readFileSync(filename).toString('base64')
+        base64Str = fs.readFileSync(path.resolve filename).toString('base64')
       
         newUrl = "data:#{mime};base64,#{base64Str}"
         contents = _.splice(contents, start, end - start, newUrl)
@@ -383,7 +389,7 @@ gzipPkg = (contents, filename, callback) =>
   file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
   ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
   exec "gzip #{file}", (err, stdout, stderr) ->
-    console.log stderr if stderr?
+    console.log stderr if stderr
     fs.renameSync file + '.gz', file + ext
     writeFile filename, contents
     callback()
