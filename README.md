@@ -64,7 +64,7 @@ nap({
 nap.package();
 ````
 
-Some express.js app based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
+Some express.js based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
 
 ## Installation
 
