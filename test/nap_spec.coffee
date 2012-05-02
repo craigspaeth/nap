@@ -4,7 +4,6 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
-twss = require('twss')
 
 describe 'init', ->
   
@@ -427,7 +426,7 @@ describe 'running the `jst` function', ->
               foo: ['/test/fixtures/1/foo.jade']
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-          .indexOf("buf.push('<h2>Hello").should.not.equal -1
+          .should.include "buf.push('<h2>"
         
   describe 'in production', ->
   
