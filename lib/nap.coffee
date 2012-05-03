@@ -82,7 +82,8 @@ module.exports.js = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
-    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.js'
+    fingerprint = '-' + generateFingerprint('js', pkg) if @fingerprint
+    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
@@ -101,7 +102,8 @@ module.exports.css = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
-    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.css'
+    fingerprint = '-' + generateFingerprint('css', pkg) if @fingerprint
+    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.css"
     src += '.cgz' if gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
@@ -120,7 +122,8 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
-    src = (@cdnUrl ? @_assetsDir) + '/' + pkg + '.jst.js'
+    fingerprint = '-' + generateFingerprint('jst', pkg) if @fingerprint
+    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   

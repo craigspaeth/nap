@@ -568,7 +568,26 @@ describe '#package', ->
           templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
     nap.package()
     fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-      .should.include "var jade="      
+      .should.include "var jade="
+      
+  it 'is able to generate a package and reference it with a fingerprint when specified', ->
+    nap
+      mode: 'production'
+      fingerprint: true
+      assets:
+        js:
+          foo: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+        jst:
+          bar: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+        css:
+          baz: ['/test/fixtures/1/foo.styl', '/test/fixtures/1/bar.css']
+    nap.package()
+    fs.readFileSync(process.cwd() + '/public/' + nap.js('foo').match(/assets\/.*.js/)[0])
+      .toString().should.include ";var foo="
+    fs.readFileSync(process.cwd() + '/public/' + nap.jst('bar').match(/assets\/.*.js/)[0])
+      .toString().should.include "var jade="
+    fs.readFileSync(process.cwd() + '/public/' + nap.css('baz').match(/assets\/.*\.css/)[0])
+      .toString().should.include ".foo{background:#f00}.foo{background:red}"
   
 describe 'preprocessors', ->
   
@@ -681,14 +700,3 @@ describe '#middleware',  ->
       data.should.include 'background: #f00;'
       done()
     }, ->
-
-describe '#fingerprint', ->
-
-  it 'will generate a hash based off the filename and size', ->
-    nap
-      mode: 'production'
-      fingerprint: true
-      assets:
-        js:
-          foo: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-    console.log nap.generateFingerprint 'js', 'foo'
