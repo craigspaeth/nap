@@ -14,6 +14,7 @@ mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 glob = require 'glob'
 rimraf = require 'rimraf'
+crypto = require 'crypto'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages.
@@ -49,6 +50,7 @@ module.exports = (options = {}) =>
   @embedImages = options.embedImages ? false
   @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
+  @fingerprint = options.fingerprint ? false
   @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
@@ -141,9 +143,11 @@ module.exports.package = (callback) =>
   
   if @assets.js?
     for pkg, files of @assets.js
-      contents = (contents for filename, contents of preprocessPkg pkg, 'js').join('')
+      contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
-      writeFile pkg + '.js', contents
+      fingerprint = '-' + generateFingerprint('js', pkg) if @fingerprint
+      filename = "#{pkg}#{fingerprint ? ''}.js"
+      writeFile filename, contents
       if @gzip then gzipPkg contents, pkg + '.js', finishCallback else finishCallback()
       total++
       
@@ -153,7 +157,9 @@ module.exports.package = (callback) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      writeFile pkg + '.css', contents
+      fingerprint = '-' + generateFingerprint('css', pkg) if @fingerprint
+      filename = "#{pkg}#{fingerprint ? ''}.css"
+      writeFile filename, contents
       if @gzip then gzipPkg contents, pkg + '.css', finishCallback else finishCallback()
       total++
       
@@ -162,7 +168,9 @@ module.exports.package = (callback) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
-      writeFile pkg + '.jst.js', contents
+      fingerprint = '-' + generateFingerprint('jst', pkg) if @fingerprint
+      filename = "#{pkg}#{fingerprint ? ''}.jst.js"
+      writeFile filename , contents
       if @gzip then gzipPkg contents, pkg + '.jst.js', finishCallback else finishCallback()
       total++
 
@@ -393,3 +401,15 @@ gzipPkg = (contents, filename, callback) =>
     fs.renameSync file + '.gz', file + ext
     writeFile filename, contents
     callback()
+    
+# Generate an md5 hash from the filename + filesize of a package. 
+# Used to append a fingerprint to pacakge files for cache busting.
+#
+# @param {String} pkgType The type `js`, `jst`, or `css` of the package
+# @param {String} pkgName The name of the package
+# @return {String} The md5 fingerprint to append
+
+module.exports.generateFingerprint = generateFingerprint = (pkgType, pkgName) =>
+  md5 = crypto.createHash('md5')
+  md5.update (file + fs.statSync(file).size for file in @assets[pkgType][pkgName]).join('')
+  md5.digest('hex')  

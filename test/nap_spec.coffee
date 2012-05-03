@@ -62,7 +62,7 @@ it "will throw an error if no assets are specified", ->
     e.message.should
       .equal "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
     
-describe 'running the `js` function', ->
+describe '#js', ->
   
   it 'takes wildcards', ->
     nap
@@ -168,7 +168,7 @@ describe 'running the `js` function', ->
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.js('baz', false).should.equal "<script src='/assets/baz.js' type='text/javascript'></script>"
     
-describe 'running the `css` function', ->
+describe '#css', ->
   
   it 'takes wildcards', ->
     nap
@@ -352,7 +352,7 @@ describe 'running the `css` function', ->
         "<link href=\'/assets/baz.css.cgz\' rel=\'stylesheet\' type=\'text/css\'>"
       )
       
-describe 'running the `jst` function', ->
+describe '#jst', ->
   
   it 'takes wildcards', ->
     nap
@@ -459,7 +459,7 @@ describe 'running the `jst` function', ->
         .equal "<script src='/assets/foo.jst.js.jgz' type='text/javascript'></script>"
      
         
-describe '`package`', ->
+describe '#package', ->
   
   it 'doesnt minify in anything but production', ->
     nap
@@ -568,8 +568,8 @@ describe '`package`', ->
           templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
     nap.package()
     fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-      .should.include "var jade="
-
+      .should.include "var jade="      
+  
 describe 'preprocessors', ->
   
   it 'you can add your own preprocessors', ->
@@ -598,7 +598,7 @@ describe 'templateParsers', ->
     fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
       .should.include "(╯°□°)╯︵ ┻━┻"
      
-describe '`middleware`',  ->
+describe '#middleware',  ->
   
   it 'renders a package in memory', (done) ->
     nap
@@ -681,3 +681,14 @@ describe '`middleware`',  ->
       data.should.include 'background: #f00;'
       done()
     }, ->
+
+describe '#fingerprint', ->
+
+  it 'will generate a hash based off the filename and size', ->
+    nap
+      mode: 'production'
+      fingerprint: true
+      assets:
+        js:
+          foo: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+    console.log nap.generateFingerprint 'js', 'foo'
