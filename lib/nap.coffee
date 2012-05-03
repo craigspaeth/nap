@@ -151,7 +151,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
-      if @gzip then gzipPkg contents, pkg + '.js', finishCallback else finishCallback()
+      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
       total++
       
   if @assets.css?
@@ -163,7 +163,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
-      if @gzip then gzipPkg contents, pkg + '.css', finishCallback else finishCallback()
+      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
       total++
       
   if @assets.jst?
@@ -174,7 +174,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
-      if @gzip then gzipPkg contents, pkg + '.jst.js', finishCallback else finishCallback()
+      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
       total++
 
 # Instead of compiling & writing the packages to disk, nap will compile and serve the files in 
@@ -412,7 +412,7 @@ gzipPkg = (contents, filename, callback) =>
 # @param {String} pkgName The name of the package
 # @return {String} The md5 fingerprint to append
 fingerprintCache = { js: {}, jst: {}, css: {} }
-module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
+fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
   md5.update (file + fs.statSync(file).size for file in @assets[pkgType][pkgName]).join('')

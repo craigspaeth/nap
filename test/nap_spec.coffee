@@ -158,7 +158,7 @@ describe '#js', ->
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.js('baz').should.equal "<script src='/assets/baz.js.jgz' type='text/javascript'></script>"
-     
+    
     it 'doesnt have to point to the gzipped file', ->
       nap
         mode: 'production'
@@ -167,6 +167,8 @@ describe '#js', ->
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.js('baz', false).should.equal "<script src='/assets/baz.js' type='text/javascript'></script>"
+    
+    it 'gzips assets that have a fingerprint'
     
 describe '#css', ->
   
