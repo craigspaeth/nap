@@ -82,7 +82,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + generateFingerprint('js', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
@@ -102,7 +102,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + generateFingerprint('css', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.css"
     src += '.cgz' if gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
@@ -122,7 +122,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + generateFingerprint('jst', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
@@ -148,7 +148,7 @@ module.exports.package = (callback) =>
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + generateFingerprint('js', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
       if @gzip then gzipPkg contents, pkg + '.js', finishCallback else finishCallback()
@@ -160,7 +160,7 @@ module.exports.package = (callback) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      fingerprint = '-' + generateFingerprint('css', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
       if @gzip then gzipPkg contents, pkg + '.css', finishCallback else finishCallback()
@@ -171,7 +171,7 @@ module.exports.package = (callback) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + generateFingerprint('jst', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
       if @gzip then gzipPkg contents, pkg + '.jst.js', finishCallback else finishCallback()
@@ -411,8 +411,9 @@ gzipPkg = (contents, filename, callback) =>
 # @param {String} pkgType The type `js`, `jst`, or `css` of the package
 # @param {String} pkgName The name of the package
 # @return {String} The md5 fingerprint to append
-
-module.exports.generateFingerprint = generateFingerprint = (pkgType, pkgName) =>
+fingerprintCache = { js: {}, jst: {}, css: {} }
+module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
+  return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
   md5.update (file + fs.statSync(file).size for file in @assets[pkgType][pkgName]).join('')
-  md5.digest('hex')  
+  fingerprintCache[pkgType][pkgName] = md5.digest('hex')
