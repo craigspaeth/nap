@@ -440,9 +440,9 @@ describe '#jst', ->
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
           .should.include "buf.push('<h2>"
     
-    describe 'using mustache', ->
+    describe 'using hogan', ->
       
-      it 'compiles less templates into JST functions', ->
+      it 'compiles mustache templates into JST functions', ->
         nap
           assets:
             jst:
