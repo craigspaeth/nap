@@ -240,11 +240,11 @@ module.exports.preprocessors = preprocessors =
         contents = out
     contents
     
-    '.less': (contents, filename) ->
-      less.render contents, (err, out) ->
-        throw(err) if err
-        contents = out
-      contents
+  '.less': (contents, filename) ->
+    less.render contents, (err, out) ->
+      throw(err) if err
+      contents = out
+    contents
 
 # An obj of default fileExtension: templateParserFunction pairs
 # The templateParserFunction function takes contents, [filename] and returns the parsed contents
