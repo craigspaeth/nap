@@ -320,6 +320,16 @@ describe '#css', ->
       fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
         .toString().should.match /\{/
     
+    it 'compiles any less files into css', ->
+      nap
+        assets:
+          css:
+            foo: ['/test/fixtures/1/foo.less']
+      nap.css('foo').should
+        .equal "<link href=\'/assets/test/fixtures/1/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
+      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
+        .toString().should.include '#header {\n  color: #4d926f;'
+    
   describe "in production", ->
     
     it 'returns a link tag pointing to the packaged file', ->
@@ -429,6 +439,17 @@ describe '#jst', ->
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
           .should.include "buf.push('<h2>"
+    
+    describe 'using mustache', ->
+      
+      it 'compiles less templates into JST functions', ->
+        nap
+          assets:
+            jst:
+              foo: ['/test/fixtures/1/foo.mustache']
+        nap.jst('foo')
+        fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+          .should.include "<h1>Hello"
         
   describe 'in production', ->
   
