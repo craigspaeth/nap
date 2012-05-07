@@ -4,11 +4,11 @@ global.nap = require('../../lib/nap')
 nap
   assets:
     js: 
-      default: ['/app/scripts/jquery.js', '/app/scripts/foo.coffee']
+      default: ['/app/scripts/jquery.js', '/app/scripts/foo.js', '/app/scripts/hogan.js']
     css: 
       default: ['/app/stylesheets/bar.styl']
     jst: 
-      default: ['/app/templates/hello.hogan']
+      default: ['/app/templates/hello.mustache']
 
 app = module.exports = express.createServer()
 app.configure ->

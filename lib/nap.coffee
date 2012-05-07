@@ -6,6 +6,7 @@ styl = require 'stylus'
 nib = require 'nib'
 jade = require 'jade'
 jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
+hogan = require 'hogan'
 sqwish = require 'sqwish'
 uglifyjs = require "uglify-js"
 _ = require 'underscore'
@@ -246,6 +247,9 @@ module.exports.templateParsers = templateParsers =
   
   '.jade': (contents, filename) ->
     jade.compile(contents, { client: true, compileDebug: true })
+
+  '.mustache': (contents, filename) ->
+    'new Hogan.Template(' + hogan.compile(contents, { asString: true }) + ')'
 
 # Generates javascript template functions packed into a JST namespace
 # 
