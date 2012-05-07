@@ -23,6 +23,7 @@
     "underscore": "*",
     "underscore.string": "*",
     "jade": "*",
+    "hogan": "*",
     "stylus": "*",
     "less": "*",
     "nib": "*",
