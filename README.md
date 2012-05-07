@@ -135,6 +135,7 @@ Nap currently only supports the following pre-processors by default. But please 
 
   * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
   * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
+  * [Less](https://github.com/cloudhead/less.git) (.less)
   
 ### Adding your own preprocessors
 
@@ -157,6 +158,7 @@ e.g. The template *app/templates/artwork/detail.jade* will be parsed using jade 
 Nap currently only supports the following template parsers by default. But please feel free to contribute more.
 
  * [Jade](https://github.com/visionmedia/jade) (.jade)
+ * [Mustache (using Hogan.js)](https://github.com/twitter/hogan.js.git) (.mustache)
 
 ### Adding your own template parsers
 
