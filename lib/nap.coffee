@@ -3,6 +3,7 @@ path = require 'path'
 exec = require('child_process').exec
 coffee = require 'coffee-script'
 styl = require 'stylus'
+less = require 'less'
 nib = require 'nib'
 jade = require 'jade'
 jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
@@ -237,6 +238,12 @@ module.exports.preprocessors = preprocessors =
       .render (err, out) ->
         throw(err) if err
         contents = out
+    contents
+    
+  '.less': (contents, filename) ->
+    less.render contents, (err, out) ->
+      throw(err) if err
+      contents = out
     contents
 
 # An obj of default fileExtension: templateParserFunction pairs
