@@ -24,6 +24,7 @@
     "underscore.string": "*",
     "jade": "*",
     "stylus": "*",
+    "less": "*",
     "nib": "*",
     "uglify-js": "*",
     "sqwish": "*",
