@@ -431,6 +431,15 @@ describe '#jst', ->
         fs.readFileSync(process.cwd() + '/public/assets/nap-templates-prefix.js').toString()
           .should.include "var jade"
       
+      it 'adds the hogan prefix', ->
+        nap
+          assets:
+            jst:
+              foo: ['/test/fixtures/1/foo.mustache']
+        nap.jst('foo')
+        fs.readFileSync(process.cwd() + '/public/assets/nap-templates-prefix.js').toString()
+          .should.include "var Hogan = {};"
+      
       it 'compiles jade templates into JST functions', ->
         nap
           assets:
@@ -592,6 +601,16 @@ describe '#package', ->
     nap.package()
     fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
       .should.include "var jade="
+      
+  it 'adds the hogan prefix', ->
+    nap
+      mode: 'production'
+      assets:
+        jst:
+          templates: ['/test/fixtures/1/foo.mustache']
+    nap.package()
+    fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
+      .should.include "var Hogan={};"
       
   it 'is able to generate a package and reference it with a fingerprint when specified', ->
     nap

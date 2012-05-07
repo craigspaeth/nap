@@ -4,7 +4,7 @@ global.nap = require('../../lib/nap')
 nap
   assets:
     js: 
-      default: ['/app/scripts/jquery.js', '/app/scripts/foo.js', '/app/scripts/hogan.js']
+      default: ['/app/scripts/jquery.js', '/app/scripts/foo.js']
     css: 
       default: ['/app/stylesheets/bar.styl']
     jst: 

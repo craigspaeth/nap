@@ -8,6 +8,7 @@ nib = require 'nib'
 jade = require 'jade'
 jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
 hogan = require 'hogan'
+hoganPrefix = fs.readFileSync(path.resolve __dirname, '../deps/hogan.js').toString()
 sqwish = require 'sqwish'
 uglifyjs = require "uglify-js"
 _ = require 'underscore'
@@ -72,7 +73,9 @@ module.exports = (options = {}) =>
     switch ext
       
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
-  
+      
+      when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
+      
   @
 
 # Run js pre-processors & output the packages in dev.
