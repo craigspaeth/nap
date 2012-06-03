@@ -18,6 +18,7 @@ fileUtil = require 'file'
 glob = require 'glob'
 rimraf = require 'rimraf'
 crypto = require 'crypto'
+zlib = require 'zlib'
 
 # The initial configuration function. Pass it options such as `assets` to let nap determine which
 # files to put together in packages.
@@ -407,17 +408,15 @@ embedFiles = (filename, contents) =>
 
 # Gzips a package.
 # 
-# @param {String} contents The new file contents
+# @param {String} contents The file contents to be gzipped
 # @param {String} filename The name of the new file
+# @param {Function} callback The callback after gzipping
   
 gzipPkg = (contents, filename, callback) =>
   file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
   ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
-  exec "gzip #{file}", (err, stdout, stderr) ->
-    console.log stderr if stderr
-    fs.renameSync file + '.gz', file + ext
-    writeFile filename, contents
-    callback()
+  zlib.gzip contents, (err, output) ->
+    fs.writeFile file + ext, output.toString(), callback
     
 # Generate an md5 hash from the filename + filesize of a package. 
 # Used to append a fingerprint to pacakge files for cache busting.
@@ -425,6 +424,7 @@ gzipPkg = (contents, filename, callback) =>
 # @param {String} pkgType The type `js`, `jst`, or `css` of the package
 # @param {String} pkgName The name of the package
 # @return {String} The md5 fingerprint to append
+
 fingerprintCache = { js: {}, jst: {}, css: {} }
 fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
