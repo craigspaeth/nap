@@ -62,7 +62,7 @@ module.exports = (options = {}) =>
   unless path.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
-  # Clear out assets directory and start fresh
+  # Clear out assets directory and package assets if mode is production
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
   unless @usingMiddleware
     fs.mkdirSync process.cwd() + @_outputDir, '0755'
@@ -76,7 +76,9 @@ module.exports = (options = {}) =>
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
       
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
-      
+  
+  module.exports.package() if @mode is 'production' and not _.isEmpty @assets
+  
   @
 
 # Run js pre-processors & output the packages in dev.
@@ -159,7 +161,7 @@ module.exports.package = (callback) =>
       writeFile filename, contents
       if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
       total++
-      
+  
   if @assets.css?
     for pkg, files of @assets.css 
       contents = (for filename, contents of preprocessPkg pkg, 'css'

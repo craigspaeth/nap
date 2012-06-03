@@ -13,7 +13,17 @@ describe 'init', ->
     exists = path.existsSync dir
     exists.should.be.ok
     fs.readFileSync(process.cwd() + '/test/fixtures/assets/.gitignore', 'UTF8').should.equal '/*'
-
+    
+  it 'will package assets for production mode', ->
+    nap
+      assets:
+        js:
+          foo: ['/test/fixtures/1/*.coffee']
+      publicDir: '/test/fixtures/'
+      mode: 'production'
+    fs.readFileSync(process.cwd() + '/test/fixtures/assets/foo.js')
+      .toString().should.equal "(function(){var a;a=\"foo\"}).call(this)"
+    
 describe 'options.publicDir', ->
 
   it "will default to '/public'", ->
