@@ -159,7 +159,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
-      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
+      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
       total++
   
   if @assets.css?
@@ -171,7 +171,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
-      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
+      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
       total++
       
   if @assets.jst?
@@ -182,7 +182,7 @@ module.exports.package = (callback) =>
       fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
-      if @gzip then gzipPkg contents, filename, finishCallback else finishCallback()
+      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
       total++
 
 # Instead of compiling & writing the packages to disk, nap will compile and serve the files in 

@@ -22,7 +22,7 @@ describe 'init', ->
       publicDir: '/test/fixtures/'
       mode: 'production'
     fs.readFileSync(process.cwd() + '/test/fixtures/assets/foo.js')
-      .toString().should.equal "(function(){var a;a=\"foo\"}).call(this)"
+      .toString().should.equal "(function(){var foo;foo=\"foo\"}).call(this)"
     
 describe 'options.publicDir', ->
 
@@ -535,7 +535,7 @@ describe '#package', ->
             all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.package()
       fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-        .indexOf("var a;a=\"foo\"}").should.not.equal -1
+        .should.include "var foo;foo=\"foo\"}"
       
     it 'minifies jsts', ->
       nap
@@ -580,16 +580,16 @@ describe '#package', ->
     nap.package()
     
     jsOut = fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-    jsOut.indexOf("var foo=\"foo\"").should.not.equal -1
-    jsOut.indexOf("var a;a=\"foo\"").should.not.equal -1
+    jsOut.should.include "var foo=\"foo\""
+    jsOut.should.include "var foo;foo=\"foo\""
     
     cssOut = fs.readFileSync(process.cwd() + '/public/assets/default.css').toString()
-    cssOut.indexOf("red").should.not.equal -1
-    cssOut.indexOf("#f00").should.not.equal -1
+    cssOut.should.include 'red'
+    cssOut.should.include "#f00"
     
     jstOut = fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-    jstOut.indexOf("<h2>").should.not.equal -1
-    jstOut.indexOf("<h1>").should.not.equal -1
+    jstOut.should.include "<h2>"
+    jstOut.should.include "<h1>"
     
   it 'will create gzip versions of assets if specified', (done) ->
     nap
