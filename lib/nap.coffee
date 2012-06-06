@@ -417,8 +417,9 @@ embedFiles = (filename, contents) =>
 gzipPkg = (contents, filename, callback) =>
   file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
   ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
-  zlib.gzip contents, (err, output) ->
-    fs.writeFile file + ext, output.toString(), callback
+  outputFilename = file + ext
+  zlib.gzip contents, (err, buf) ->
+    fs.writeFile outputFilename, buf, callback
     
 # Generate an md5 hash from the filename + filesize of a package. 
 # Used to append a fingerprint to pacakge files for cache busting.
