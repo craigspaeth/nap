@@ -4,7 +4,7 @@
 
 ## Example
 
-Declare asset packages
+1. Declare asset packages
 
 ````javascript
 global.nap = require('nap');
@@ -34,7 +34,7 @@ nap({
 });
 ````
 
-Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
+2. Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
 
 ````jade
 !!!
@@ -49,9 +49,7 @@ html
       != nap.js('backbone')
 ````
 
-Assets will be compiled and output on every request in development, and concatenated/minified/gzipped once upon initialization in production.
-
-Some express.js based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
+Assets will be compiled and output on every request in development, and concatenated/minified/gzipped once upon initialization in production. Some express.js based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
 
 ## Installation
 
