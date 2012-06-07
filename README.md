@@ -4,7 +4,7 @@
 
 ## Example
 
-1. Declare asset packages
+### 1. Declare asset packages
 
 ````javascript
 global.nap = require('nap');
@@ -34,7 +34,7 @@ nap({
 });
 ````
 
-2. Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
+### 2. Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
 
 ````jade
 !!!
