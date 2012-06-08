@@ -4,7 +4,7 @@
 
 ## Example
 
-Declare asset packages
+### 1. Declare asset packages
 
 ````javascript
 global.nap = require('nap');
@@ -34,7 +34,7 @@ nap({
 });
 ````
 
-Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
+### 2. Include packages in your views by calling one of nap's helpers. (example in [jade](https://github.com/visionmedia/jade))
 
 ````jade
 !!!
@@ -49,22 +49,7 @@ html
       != nap.js('backbone')
 ````
 
-Concatenate & minify once for production
-
-````javascript
-nap({
-  mode: 'production',
-  assets: {
-    js: //...
-    css: //...
-    jst: //...
-  }
-});
-
-nap.package();
-````
-
-Some express.js based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
+Assets will be compiled and output on every request in development, and concatenated/minified/gzipped once upon initialization in production. Some express.js based examples can be found in the [examples folder](https://github.com/craigspaeth/nap/tree/master/examples).
 
 ## Installation
 
@@ -184,7 +169,7 @@ In development, nap will run any pre-processors and output a bunch of individual
 
 ### Production
   
-In production use the `nap.package()` function once (e.g. upon deployment).
+In production nap will call `nap.package()` upon initialization (aka. calling `nap({ assets: ..., mode: 'production' })`).
 
 Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js*). 
 
