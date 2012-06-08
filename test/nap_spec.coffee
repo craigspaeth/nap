@@ -138,6 +138,16 @@ describe '#js', ->
       nap.js('bar').should
         .equal "<script src='/assets/test/fixtures/1/sub/baz.js' type='text/javascript'></script>"
     
+    it 'will put the filename in the stack trace', ->
+      nap
+        assets:
+          js:
+            bar: ['test/fixtures/bad/bad_coffee.coffee']
+      try
+        nap.js('bar')
+      catch e
+        e.stack.should.include 'Nap error compiling test/fixtures/bad/bad_coffee.coffee'
+      
     it 'only compiles files that have been changed since they were last touched'
     
   describe 'in production mode', ->

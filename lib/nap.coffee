@@ -236,8 +236,12 @@ module.exports.middleware = (req, res, next) =>
 module.exports.preprocessors = preprocessors =
   
   '.coffee': (contents, filename) ->
-    coffee.compile contents
-  
+    try
+      coffee.compile contents
+    catch err
+      err.stack = "Nap error compiling #{filename}\n" + err.stack
+      throw err
+    
   '.styl': (contents, filename) ->
     styl(contents)
       .set('filename', process.cwd() + '/' + filename)
