@@ -88,6 +88,7 @@ nap({
   embedImages: true,
   embedFonts: true,
   gzip: true,
+  fingerprint: true,
   assets: {
     js: {
       backbone: [
