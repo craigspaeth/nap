@@ -29,19 +29,11 @@ zlib = require 'zlib'
 module.exports = (options = {}) =>
   
   # Expand asset globs
-  @assets = options.assets
-  unless @assets?
+  unless options.assets?
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
-  appDir = process.cwd().replace(/\\/g, "\/")
-  for key, obj of @assets
-    for pkg, patterns of @assets[key]
-      matches = []
-      for pattern in patterns
-        fnd = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
-        matches = matches.concat(fnd) 
-      matches = _.uniq _.flatten matches
-      matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
-      @assets[key][pkg] = matches
+  @assets = _.clone options.assets
+  @originalAssets = _.clone options.assets
+  expandAssetGlobs()
 
   # Config defaults
   @publicDir = options.publicDir ? '/public'
@@ -54,7 +46,7 @@ module.exports = (options = {}) =>
   @embedImages = options.embedImages ? false
   @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
-  @fingerprint = options.fingerprint ? false
+  @fingerprint = options.fingerprint ? @mode is 'production'
   @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
@@ -95,6 +87,8 @@ module.exports.js = (pkg, gzip = @gzip) =>
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
   
+  expandAssetGlobs()
+  
   output = ''
   for filename, contents of preprocessPkg pkg, 'js'
     writeFile filename, contents unless @usingMiddleware
@@ -115,6 +109,8 @@ module.exports.css = (pkg, gzip = @gzip) =>
     src += '.cgz' if gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
   
+  expandAssetGlobs()
+  
   output = ''
   for filename, contents of preprocessPkg pkg, 'css'
     writeFile filename, embedFiles filename, contents unless @usingMiddleware
@@ -134,6 +130,8 @@ module.exports.jst = (pkg, gzip = @gzip) =>
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
+  
+  expandAssetGlobs()
   
   unless @usingMiddleware
     fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
@@ -438,3 +436,19 @@ fingerprintForPkg = (pkgType, pkgName) =>
   md5 = crypto.createHash('md5')
   md5.update (file + fs.statSync(file).size for file in @assets[pkgType][pkgName]).join('')
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
+  
+# Goes through asset declarations and expands them into full file paths, globs and all.
+
+expandAssetGlobs = =>
+  assets = {js: {}, css: {}, jst: {}}
+  appDir = process.cwd().replace(/\\/g, "\/")
+  for key, obj of @originalAssets
+    for pkg, patterns of @originalAssets[key]
+      matches = []
+      for pattern in patterns
+        fnd = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
+        matches = matches.concat(fnd) 
+      matches = _.uniq _.flatten matches
+      matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
+      assets[key][pkg] = matches
+  @assets = assets

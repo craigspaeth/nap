@@ -21,6 +21,7 @@ describe 'init', ->
           foo: ['/test/fixtures/1/*.coffee']
       publicDir: '/test/fixtures/'
       mode: 'production'
+      fingerprint: false
     fs.readFileSync(process.cwd() + '/test/fixtures/assets/foo.js')
       .toString().should.equal "(function(){var foo;foo=\"foo\"}).call(this)"
     
@@ -155,6 +156,7 @@ describe '#js', ->
     it 'returns a script tag pointing to the packaged file', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
@@ -163,6 +165,7 @@ describe '#js', ->
     it 'returns a script tag pointing to the CDN packaged file', ->
       nap
         mode: 'production'
+        fingerprint: false
         cdnUrl: 'http://cdn.com/'
         assets:
           js:
@@ -173,6 +176,7 @@ describe '#js', ->
     it 'points to the gzipped file if specified', ->
       nap
         mode: 'production'
+        fingerprint: false
         gzip: true
         assets:
           js:
@@ -182,6 +186,7 @@ describe '#js', ->
     it 'doesnt have to point to the gzipped file', ->
       nap
         mode: 'production'
+        fingerprint: false
         gzip: true
         assets:
           js:
@@ -317,7 +322,7 @@ describe '#css', ->
       throw new Error()
     catch e
       e.message.should.match /invalid\.styl/
-
+  
   describe 'in development mode', ->
     
     it 'returns multiple link tags put together', ->
@@ -355,6 +360,7 @@ describe '#css', ->
     it 'returns a link tag pointing to the packaged file', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
@@ -365,6 +371,7 @@ describe '#css', ->
     it 'returns a link tag pointing to the CDN packaged file', ->
       nap
         mode: 'production'
+        fingerprint: false
         cdnUrl: 'http://cdn.com'
         assets:
           css:
@@ -376,6 +383,7 @@ describe '#css', ->
     it 'points to the gzipped file if specified', ->
       nap
         mode: 'production'
+        fingerprint: false
         gzip: true
         assets:
           css:
@@ -485,6 +493,7 @@ describe '#jst', ->
     it 'returns a `pkg`.jst.js script tag pointing to the output templates', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
@@ -494,6 +503,7 @@ describe '#jst', ->
       nap
         cdnUrl: 'http://cdn.com'
         mode: 'production'
+        fingerprint: false
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
@@ -503,6 +513,7 @@ describe '#jst', ->
     it 'points to the gzipped file if specified', ->
       nap
         mode: 'production'
+        fingerprint: false
         gzip: true
         assets:
           jst:
@@ -540,6 +551,7 @@ describe '#package', ->
     it 'minifies js', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           js:
             all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
@@ -550,6 +562,7 @@ describe '#package', ->
     it 'minifies jsts', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           jst:
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
@@ -560,6 +573,7 @@ describe '#package', ->
     it 'minifies css', ->
       nap
         mode: 'production'
+        fingerprint: false
         assets:
           css:
             default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
@@ -579,6 +593,7 @@ describe '#package', ->
   it 'concatenates the assets and ouputs all of the packages', ->
     nap
       mode: 'production'
+      fingerprint: false
       assets:
         js:
           all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
@@ -615,6 +630,7 @@ describe '#package', ->
   it 'adds the jade runtime', ->
     nap
       mode: 'production'
+      fingerprint: false
       assets:
         jst:
           templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
@@ -625,6 +641,7 @@ describe '#package', ->
   it 'adds the hogan prefix', ->
     nap
       mode: 'production'
+      fingerprint: false
       assets:
         jst:
           templates: ['/test/fixtures/1/foo.mustache']
@@ -719,6 +736,7 @@ describe '#middleware',  ->
   it 'just goes on to the next in production', ->
     nap
       mode: 'production'
+      fingerprint: false
       assets:
         css:
           foo: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
@@ -762,3 +780,30 @@ describe '#middleware',  ->
       data.should.include 'background: #f00;'
       done()
     }, ->
+      
+describe 'in dev mode', ->
+  
+  afterEach ->
+    
+    fs.unlinkSync "#{process.cwd()}/test/fixtures/2/bar.css"
+    fs.unlinkSync "#{process.cwd()}/test/fixtures/2/bar.js"
+    fs.unlinkSync "#{process.cwd()}/test/fixtures/2/bar.jade"
+  
+  it 'considers when new files are added that could match the asset globs', ->
+    nap
+      mode: 'development'
+      assets:
+        css:
+          foo: ['/test/fixtures/2/**/*.css']
+        js:
+          foo: ['/test/fixtures/2/**/*.js']
+        jst:
+          foo: ['/test/fixtures/2/**/*.jade']
+    nap.css('foo').should
+      .equal "<link href=\'/assets/test/fixtures/2/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
+    fs.writeFileSync "#{process.cwd()}/test/fixtures/2/bar.css", '.bar { background: red }'
+    fs.writeFileSync "#{process.cwd()}/test/fixtures/2/bar.js", "var bar = 'bar';"
+    fs.writeFileSync "#{process.cwd()}/test/fixtures/2/bar.jade", "h1 Bar"
+    nap.css('foo').should
+      .equal "<link href=\'/assets/test/fixtures/2/bar.css\' rel=\'stylesheet\' type=\'text/css\'><link href=\'/assets/test/fixtures/2/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
+    
