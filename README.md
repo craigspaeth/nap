@@ -79,10 +79,7 @@ nap({
   publicDir: '/public',
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/',
-  embedImages: true,
-  embedFonts: true,
   gzip: true,
-  fingerprint: true,
   assets: {
     js: {
       backbone: [
