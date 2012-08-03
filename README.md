@@ -71,10 +71,6 @@ Simply pass a set of options to the main `nap` function to configure your asset 
   * the mode you want nap to be in 'production' or 'development'
 * cdnUrl
   * If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
-* embedImages (defaults to false)
-  * When true, it embeds image urls in CSS files ending in *_embed* using data-uri  e.g. *images_embed.styl*
-* embedFonts (defaults to false)
-  * When true, it embeds font urls in CSS files ending in *_embed* using data-uri  e.g. *fonts_embed.styl*
 * gzip (defaults to false)
   * Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 
@@ -132,6 +128,10 @@ var nap = require('nap')
   , coffee = require('coffee-script');
 nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(contents) };
 ````
+
+### Embedding fonts & images in stylesheets
+
+To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. Nap will read the file from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
 
 ## Client-side Javascript Templating (JSTs) 
 

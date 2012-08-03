@@ -42,8 +42,6 @@ module.exports = (options = {}) =>
     when 'production' then 'production'
     else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
-  @embedImages = options.embedImages ? false
-  @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
   @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
@@ -356,24 +354,14 @@ embedFiles = (filename, contents) =>
   return contents if not contents? or contents is '' or not endsWithEmbed
   
   # Table of mime types depending on file extension
-  mimes = {}
-  if @embedImages
-    mimes = _.extend {
-      '.gif' : 'image/gif'
-      '.png' : 'image/png'
-      '.jpg' : 'image/jpeg'
-      '.jpeg': 'image/jpeg'
-      '.svg' : 'image/svg+xml'
-    }, mimes
-  
-  if @embedFonts
-    mimes = _.extend {
-      '.ttf': 'font/truetype;charset=utf-8'
-      '.woff': 'font/woff;charset=utf-8'
-      '.svg' : 'image/svg+xml'
-    }, mimes
-  
-  return contents if _.isEmpty mimes
+  mimes =
+    '.gif' : 'image/gif'
+    '.png' : 'image/png'
+    '.jpg' : 'image/jpeg'
+    '.jpeg': 'image/jpeg'
+    '.svg' : 'image/svg+xml'
+    '.ttf' : 'font/truetype;charset=utf-8'
+    '.woff': 'font/woff;charset=utf-8'
   
   offset = 0
   offsetContents = contents.substring(offset, contents.length)

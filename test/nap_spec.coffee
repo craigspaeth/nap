@@ -250,17 +250,7 @@ describe '#css', ->
     nap.css 'foo'
     fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_deep_embed.css')
       .toString().should.match /data:image/
-  
-  it 'doesnt have to embed image files', ->
-    nap
-      embedImages: false
-      assets:
-        css:
-          foo: ['/test/fixtures/1/imgs_embed.styl']
-    nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs_embed.css')
-      .toString().should.not.match /data:image/
-    
+      
   it 'doesnt try to embed files that arent embeddable', ->
     nap
       embedImages: true
