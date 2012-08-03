@@ -107,7 +107,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   
   output = ''
   for filename, contents of preprocessPkg pkg, 'css'
-    writeFile filename, embedFiles filename, contents unless @usingMiddleware
+    writeFile filename, contents unless @usingMiddleware
     output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
   
@@ -391,8 +391,8 @@ embedFiles = (filename, contents) =>
     
     offset = end
     offsetContents = contents.substring(offset, contents.length)
-
-  return contents
+  
+  contents
 
 # Gzips a package.
 # 

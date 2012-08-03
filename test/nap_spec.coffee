@@ -209,67 +209,25 @@ describe '#css', ->
           foo: ['test/fixtures/1/bar.css']
     nap.css('foo').should
       .equal "<link href=\'/assets/test/fixtures/1/bar.css\' rel=\'stylesheet\' type=\'text/css\'>"
-  
-  it 'embeds any image files', ->
-    nap
-      embedImages: true
-      assets:
-        css:
-          foo: ['/test/fixtures/1/imgs_embed.styl']
-    nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs_embed.css')
-      .toString().should.match /data:image/
       
   it 'only embeds files with a _embed extension namespace', ->
     nap
-      embedImages: true
       assets:
         css:
           foo: ['/test/fixtures/1/imgs.styl']
     nap.css 'foo'
     fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/imgs.css')
       .toString().should.not.match /data:image/
-  
-  it 'embeds image files in sub directories', ->
-    nap
-      embedImages: true
-      assets:
-        css:
-          foo: ['/test/fixtures/1/img_deep_embed.styl']
-    nap.css 'foo'
-    fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_deep_embed.css')
-      .toString().should.match /data:image/
-      
+        
   it 'doesnt try to embed files that arent embeddable', ->
     nap
-      embedImages: true
       assets:
         css:
           foo: ['/test/fixtures/1/img_garbage.styl']
     nap.css 'foo'
     file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/img_garbage.css')
     file.toString().should.not.include 'data:'
-  
-  it 'can embed fonts', ->
-    nap
-      embedFonts: true
-      assets:
-        css:
-          foo: ['/test/fixtures/1/fonts_embed.styl']
-    nap.css 'foo'
-    file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/fonts_embed.css')
-    file.toString().should.include 'data:font/truetype'
-  
-  it 'can embed fonts using the fancy degrading mixin', ->
-    nap
-      embedFonts: true
-      assets:
-        css:
-          foo: ['/test/fixtures/1/font_mixins_embed.styl']
-    nap.css 'foo'
-    file = fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/font_mixins_embed.css')
-    file.toString().should.include 'data:font/truetype'
-  
+    
   it 'uses nib', ->
     nap
       assets:
@@ -559,13 +517,40 @@ describe '#package', ->
   
   it 'embeds any image files', ->
     nap
-      embedImages: true
+      mode: 'production'
       assets:
         css:
           default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/imgs_embed.styl']
     nap.package()
-    fs.readFileSync(process.cwd() + '/public/assets/default.css').toString().should.match /data:image/
-     
+    readPkg('default.css').should.match /data:image/
+  
+  it 'can embed fonts', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/1/fonts_embed.styl']
+    nap.package()
+    readPkg('foo.css').should.include 'data:font/truetype'
+  
+  it 'embeds image files in sub directories', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/1/img_deep_embed.styl']
+    nap.package()
+    readPkg('foo.css').should.match /data:image/
+  
+  it 'can embed fonts using the fancy degrading mixin', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/1/font_mixins_embed.styl']
+    nap.package()
+    readPkg('foo.css').should.include 'data:font/truetype'
+  
   it 'concatenates the assets and ouputs all of the packages', ->
     nap
       mode: 'production'
@@ -593,7 +578,6 @@ describe '#package', ->
     
   it 'will create gzip versions of assets if specified', (done) ->
     nap
-      embedImages: true
       gzip: true
       assets:
         css:
