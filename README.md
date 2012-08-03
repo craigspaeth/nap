@@ -182,7 +182,7 @@ In development, nap will run any pre-processors and output a bunch of individual
   
 In production nap will call `nap.package()` upon initialization (aka. calling `nap({ assets: ..., mode: 'production' })`).
 
-Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint to prevent stale assets being loaded from a browser's cache.
+Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint for cache busting. See the Rails asset pipeline [1.2 What is Fingerprinting and Why Should I Care?](http://guides.rubyonrails.org/asset_pipeline.html) for details on how this works.
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
   
