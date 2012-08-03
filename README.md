@@ -143,7 +143,7 @@ nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(conten
 
 ### Embedding fonts & images in stylesheets
 
-To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. Nap will read the file from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
+To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. Nap will read files inside `url()` declarations from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
 
 ## Client-side Javascript Templating (JSTs) 
 
