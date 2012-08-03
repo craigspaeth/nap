@@ -407,18 +407,19 @@ gzipPkg = (contents, filename, callback) =>
   zlib.gzip contents, (err, buf) ->
     fs.writeFile outputFilename, buf, callback
     
-# Generate an md5 hash from the filename + filesize of a package. 
-# Used to append a fingerprint to pacakge files for cache busting.
+# Generate an md5 hash from the contents of a package. 
+# Used to append a fingerprint to package files for cache busting.
 #
 # @param {String} pkgType The type `js`, `jst`, or `css` of the package
 # @param {String} pkgName The name of the package
 # @return {String} The md5 fingerprint to append
 
 fingerprintCache = { js: {}, jst: {}, css: {} }
-fingerprintForPkg = (pkgType, pkgName) =>
+module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
-  md5.update (file + fs.statSync(file).size for file in @assets[pkgType][pkgName]).join('')
+  pkgContents = (fs.readFileSync(file) for file in @assets[pkgType][pkgName]).join('')
+  md5.update pkgContents
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   
 # Goes through asset declarations and expands them into full file paths, globs and all.

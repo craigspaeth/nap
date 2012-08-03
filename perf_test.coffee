@@ -31,3 +31,22 @@ for i in [0..1000]
   nap.generateJSTs 'baz'
       
 console.log "Generating JSTs 1000x: " + (new Date().getTime() - start)
+
+# Generating fingerprint
+
+start = new Date().getTime()
+nap
+  assets:
+    js:
+      foo: ['/test/fixtures/1/**/*.js', '/test/fixtures/1/**/*.coffee']
+    css:
+      bar: ['/test/fixtures/1/**/*.css', '/test/fixtures/1/**/*.styl']
+    jst:
+      baz: ['/test/fixtures/1/**/*.jade', '/test/fixtures/templates/**/*.jade']
+
+for i in [0..1000]
+  nap.fingerprintForPkg 'js', 'foo'
+  nap.fingerprintForPkg 'css', 'bar'
+  nap.fingerprintForPkg 'jst', 'baz'
+      
+console.log "Fingerprint for 1000x: " + (new Date().getTime() - start)
