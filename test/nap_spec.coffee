@@ -23,7 +23,7 @@ describe 'init', ->
       mode: 'production'
       fingerprint: false
     fs.readFileSync(process.cwd() + '/test/fixtures/assets/foo.js')
-      .toString().should.equal "(function(){var foo;foo=\"foo\"}).call(this)"
+      .toString().should.equal "(function(){var e;e=\"foo\"}).call(this)"
     
 describe 'options.publicDir', ->
 
@@ -557,7 +557,7 @@ describe '#package', ->
             all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       nap.package()
       fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-        .should.include "var foo;foo=\"foo\"}"
+        .should.include "var e;e=\"foo\"}"
       
     it 'minifies jsts', ->
       nap
@@ -606,7 +606,7 @@ describe '#package', ->
     
     jsOut = fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
     jsOut.should.include "var foo=\"foo\""
-    jsOut.should.include "var foo;foo=\"foo\""
+    jsOut.should.include "var e;e=\"foo\""
     
     cssOut = fs.readFileSync(process.cwd() + '/public/assets/default.css').toString()
     cssOut.should.include 'red'
