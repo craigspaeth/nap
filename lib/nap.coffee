@@ -65,8 +65,6 @@ module.exports = (options = {}) =>
       
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
   
-  module.exports.package() if @mode is 'production' and not _.isEmpty @assets
-  
   @
 
 # Run js pre-processors & output the packages in dev.

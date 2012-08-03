@@ -22,17 +22,6 @@ describe 'init', ->
     exists.should.be.ok
     fs.readFileSync(process.cwd() + '/test/fixtures/assets/.gitignore', 'UTF8').should.equal '/*'
     
-  it 'will package assets for production mode', ->
-    nap
-      assets:
-        js:
-          foo: ['/test/fixtures/1/*.coffee']
-      publicDir: '/test/fixtures/'
-      mode: 'production'
-    dir = process.cwd() + '/test/fixtures/assets/'
-    fs.readFileSync(dir + fs.readdirSync(dir)[1])
-      .toString().should.equal "(function(){var e;e=\"foo\"}).call(this)"
-    
 describe 'options.publicDir', ->
 
   it "will default to '/public'", ->
