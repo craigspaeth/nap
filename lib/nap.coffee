@@ -37,16 +37,14 @@ module.exports = (options = {}) =>
 
   # Config defaults
   @publicDir = options.publicDir ? '/public'
-  @mode = options.mode ? do ->
-    switch process.env.NODE_ENV
-      when 'staging' then 'production'
-      when 'production' then 'production'
-      else 'development'
+  @mode = options.mode ? switch process.env.NODE_ENV
+    when 'staging' then 'production'
+    when 'production' then 'production'
+    else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
   @embedImages = options.embedImages ? false
   @embedFonts = options.embedFonts ? false
   @gzip = options.gzip ? false
-  @fingerprint = options.fingerprint ? @mode is 'production'
   @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
@@ -82,7 +80,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
@@ -104,7 +102,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.css"
     src += '.cgz' if gzip
     return "<link href='#{src}' rel='stylesheet' type='text/css'>"
@@ -126,7 +124,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   throw new Error "Cannot find package '#{pkg}'" unless @assets.jst[pkg]?
   
   if @mode is 'production'
-    fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
+    fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
     return "<script src='#{src}' type='text/javascript'></script>"
@@ -154,7 +152,7 @@ module.exports.package = (callback) =>
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('js', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
@@ -166,7 +164,7 @@ module.exports.package = (callback) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('css', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
@@ -177,7 +175,7 @@ module.exports.package = (callback) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @fingerprint
+      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()

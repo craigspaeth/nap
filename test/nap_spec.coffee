@@ -5,6 +5,14 @@ path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
 
+# Read a package despite it's fingerprint
+readPkg = (pkg) ->
+  name = pkg.split('.')[0]
+  ext = pkg.split('.').slice(1).join('.')
+  dir = process.cwd() + '/public/assets/'
+  file = _(fs.readdirSync(dir)).select((file) -> file.match /// #{name}.*#{ext} ///)[0]
+  fs.readFileSync(dir + file).toString()
+
 describe 'init', ->
   
   it 'will set up a clear assets directory with a gitignore', ->
@@ -21,8 +29,8 @@ describe 'init', ->
           foo: ['/test/fixtures/1/*.coffee']
       publicDir: '/test/fixtures/'
       mode: 'production'
-      fingerprint: false
-    fs.readFileSync(process.cwd() + '/test/fixtures/assets/foo.js')
+    dir = process.cwd() + '/test/fixtures/assets/'
+    fs.readFileSync(dir + fs.readdirSync(dir)[1])
       .toString().should.equal "(function(){var e;e=\"foo\"}).call(this)"
     
 describe 'options.publicDir', ->
@@ -156,42 +164,42 @@ describe '#js', ->
     it 'returns a script tag pointing to the packaged file', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.js('baz').should.equal "<script src='/assets/baz.js' type='text/javascript'></script>"
+      
+      nap.js('baz').should.include "<script src='/assets/baz"
       
     it 'returns a script tag pointing to the CDN packaged file', ->
       nap
         mode: 'production'
-        fingerprint: false
         cdnUrl: 'http://cdn.com/'
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.js('baz').should
-        .equal "<script src='http://cdn.com/baz.js' type='text/javascript'></script>"
+      
+      nap.js('baz').should.include "<script src='http://cdn.com/baz"
     
-    it 'points to the gzipped file if specified', ->
+    it 'points to the 
+    ified', ->
       nap
         mode: 'production'
-        fingerprint: false
         gzip: true
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.js('baz').should.equal "<script src='/assets/baz.js.jgz' type='text/javascript'></script>"
+      
+      nap.js('baz').should.include "<script src='/assets/baz"
     
     it 'doesnt have to point to the gzipped file', ->
       nap
         mode: 'production'
-        fingerprint: false
         gzip: true
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.js('baz', false).should.equal "<script src='/assets/baz.js' type='text/javascript'></script>"
+      
+      nap.js('baz', false).should.include "<script src='/assets/baz"
     
     it 'gzips assets that have a fingerprint'
     
@@ -360,37 +368,31 @@ describe '#css', ->
     it 'returns a link tag pointing to the packaged file', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
-      nap.css('baz').should.equal(
-        "<link href=\'/assets/baz.css\' rel=\'stylesheet\' type=\'text/css\'>"
-      )
+      
+      nap.css('baz').should.include "<link href=\'/assets/baz"
       
     it 'returns a link tag pointing to the CDN packaged file', ->
       nap
         mode: 'production'
-        fingerprint: false
         cdnUrl: 'http://cdn.com'
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
-      nap.css('baz').should.equal(
-        "<link href=\'http://cdn.com/baz.css\' rel=\'stylesheet\' type=\'text/css\'>"
-      )
+      
+      nap.css('baz').should.include "<link href=\'http://cdn.com/baz"
     
     it 'points to the gzipped file if specified', ->
       nap
         mode: 'production'
-        fingerprint: false
         gzip: true
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
-      nap.css('baz').should.equal(
-        "<link href=\'/assets/baz.css.cgz\' rel=\'stylesheet\' type=\'text/css\'>"
-      )
+      
+      nap.css('baz').should.include "<link href=\'/assets/baz"
       
 describe '#jst', ->
   
@@ -456,7 +458,7 @@ describe '#jst', ->
             jst:
               foo: ['/test/fixtures/1/foo.jade']
         nap.jst('foo')
-        fs.readFileSync(process.cwd() + '/public/assets/nap-templates-prefix.js').toString()
+        readPkg('nap-templates-prefix.js').toString()
           .should.include "var jade"
       
       it 'adds the hogan prefix', ->
@@ -493,33 +495,31 @@ describe '#jst', ->
     it 'returns a `pkg`.jst.js script tag pointing to the output templates', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.jst('foo').should.equal "<script src='/assets/foo.jst.js' type='text/javascript'></script>"
+      
+      nap.jst('foo').should.include "<script src='/assets/foo"
       
     it 'points to the cdn if specified', ->
       nap
         cdnUrl: 'http://cdn.com'
         mode: 'production'
-        fingerprint: false
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.jst('foo').should
-        .equal "<script src='http://cdn.com/foo.jst.js' type='text/javascript'></script>"
+      
+      nap.jst('foo').should.include "<script src='http://cdn.com/foo"
      
     it 'points to the gzipped file if specified', ->
       nap
         mode: 'production'
-        fingerprint: false
         gzip: true
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.jst('foo').should
-        .equal "<script src='/assets/foo.jst.js.jgz' type='text/javascript'></script>"
+      
+      nap.jst('foo').should.include "<script src='/assets/foo"
      
         
 describe '#package', ->
@@ -551,35 +551,32 @@ describe '#package', ->
     it 'minifies js', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           js:
             all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+      
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-        .should.include "var e;e=\"foo\"}"
+      readPkg('all.js').should.include "var e;e=\"foo\"}"
       
     it 'minifies jsts', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           jst:
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+      
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-        .indexOf("\n").should.equal -1
+      readPkg('templates.jst.js').indexOf("\n").should.equal -1
       
     it 'minifies css', ->
       nap
         mode: 'production'
-        fingerprint: false
         assets:
           css:
             default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
+      
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/default.css').toString()
-        .indexOf("\n").should.equal -1
+      readPkg('default.css').should.not.include "\n"
   
   it 'embeds any image files', ->
     nap
@@ -593,7 +590,6 @@ describe '#package', ->
   it 'concatenates the assets and ouputs all of the packages', ->
     nap
       mode: 'production'
-      fingerprint: false
       assets:
         js:
           all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
@@ -604,15 +600,15 @@ describe '#package', ->
     
     nap.package()
     
-    jsOut = fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
+    jsOut = readPkg 'all.js'
     jsOut.should.include "var foo=\"foo\""
     jsOut.should.include "var e;e=\"foo\""
     
-    cssOut = fs.readFileSync(process.cwd() + '/public/assets/default.css').toString()
+    cssOut = readPkg 'default.css'
     cssOut.should.include 'red'
     cssOut.should.include "#f00"
     
-    jstOut = fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
+    jstOut = readPkg 'templates.jst.js'
     jstOut.should.include "<h2>"
     jstOut.should.include "<h1>"
     
@@ -630,24 +626,22 @@ describe '#package', ->
   it 'adds the jade runtime', ->
     nap
       mode: 'production'
-      fingerprint: false
       assets:
         jst:
           templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+    
     nap.package()
-    fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-      .should.include "var jade="
+    readPkg('templates.jst.js').toString().should.include "var jade="
       
   it 'adds the hogan prefix', ->
     nap
       mode: 'production'
-      fingerprint: false
       assets:
         jst:
           templates: ['/test/fixtures/1/foo.mustache']
+    
     nap.package()
-    fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-      .should.include "var Hogan={};"
+    readPkg('templates.jst.js').toString().should.include "var Hogan={};"
       
   it 'is able to generate a package and reference it with a fingerprint when specified', ->
     nap
@@ -736,10 +730,10 @@ describe '#middleware',  ->
   it 'just goes on to the next in production', ->
     nap
       mode: 'production'
-      fingerprint: false
       assets:
         css:
           foo: ['/test/fixtures/1/bar.css', '/test/fixtures/1/foo.styl']
+    
     calledNext = false
     nap.middleware { url: '/assets/test/fixtures/1/foo.css' }, { end: (data) -> 
       data.should.include 'background: #f00;'

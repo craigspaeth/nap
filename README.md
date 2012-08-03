@@ -77,8 +77,6 @@ Simply pass a set of options to the main `nap` function to configure your asset 
   * When true, it embeds font urls in CSS files ending in *_embed* using data-uri  e.g. *fonts_embed.styl*
 * gzip (defaults to false)
   * Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
-* fingerprint (defaults to true)
-  * When true will add an md5 hash to the generated asset package allowing assets to be easily cache busted. (production mode only)
 
 ````javascript
 nap({
@@ -172,7 +170,7 @@ In development, nap will run any pre-processors and output a bunch of individual
   
 In production nap will call `nap.package()` upon initialization (aka. calling `nap({ assets: ..., mode: 'production' })`).
 
-Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js*). 
+Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint to prevent stale assets being loaded from a browser's cache.
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
   
