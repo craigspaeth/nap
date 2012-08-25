@@ -144,7 +144,7 @@ var nap = require('nap')
 nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(contents) };
 ````
 
-### Embedding fonts & images in stylesheets
+## Embedding fonts & images in stylesheets
 
 To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. In "production" mode nap will read files inside `url()` declarations from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
 
