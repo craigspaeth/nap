@@ -78,16 +78,19 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 
 ## Options
 
-* assets
-  * the assets object containing all of your package declarations
-* publicDir (defaults to */public*)
-  * your public directory where you serve static content
-* mode (defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development')
-  * the mode you want nap to be in 'production' or 'development'
-* cdnUrl
-  * If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
-* gzip (defaults to false)
-  * Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
+#### assets
+the assets object containing all of your package declarations
+#### publicDir
+_defaults to */public*_  
+your public directory where you serve static content
+#### mode
+_defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'_  
+the mode you want nap to be in 'production' or 'development'
+#### cdnUrl
+If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
+#### gzip
+_defaults to false_  
+Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 
 ````javascript
 nap({
@@ -141,7 +144,7 @@ var nap = require('nap')
 nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(contents) };
 ````
 
-### Embedding fonts & images in stylesheets
+## Embedding fonts & images in stylesheets
 
 To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. In "production" mode nap will read files inside `url()` declarations from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
 
@@ -180,9 +183,7 @@ In development, nap will run any pre-processors and output a bunch of individual
 
 ### Production
   
-In production nap will call `nap.package()` upon initialization (aka. calling `nap({ assets: ..., mode: 'production' })`).
-
-Calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint for cache busting. See the Rails asset pipeline [1.2 What is Fingerprinting and Why Should I Care?](http://guides.rubyonrails.org/asset_pipeline.html) for details on how this works.
+In production mode calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint for cache busting. See the Rails asset pipeline [1.2 What is Fingerprinting and Why Should I Care?](http://guides.rubyonrails.org/asset_pipeline.html) for details on how this works.
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
   
