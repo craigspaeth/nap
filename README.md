@@ -70,6 +70,8 @@ Some express.js based examples can be found in the [examples folder](https://git
 
 `npm install nap`
 
+**You must include individual pre-processors in your package.json to use them.**
+
 ## Usage
 
 To make things easy nap assumes you have a */public* folder to serve static assets (like an Express.js public folder) so that nap can generate & reference assets inside */public/assets*.
@@ -125,6 +127,8 @@ nap({
 ## JS & CSS Pre-processors
 
 Nap will automatically precompile any javascript and css pre-processors based on the file extension.
+
+**You must include individual pre-processors in your package.json to use them.**
 
 Nap currently only supports the following pre-processors by default. But please feel free to contribute more.
 
