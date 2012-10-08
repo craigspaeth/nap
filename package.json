@@ -23,11 +23,6 @@
     "coffee-script": "*",
     "underscore": "*",
     "underscore.string": "*",
-    "jade": "*",
-    "hogan": "*",
-    "stylus": "*",
-    "less": "*",
-    "nib": "*",
     "uglify-js": "*",
     "sqwish": "*",
     "mkdirp": "*",
@@ -38,7 +33,12 @@
   "devDependencies": {
     "mocha": "*",
     "should": "*",
-    "wrench": "*"
+    "wrench": "*",
+    "jade": "*",
+    "hogan": "*",
+    "stylus": "*",
+    "less": "*",
+    "nib": "*"
   },
   "repository": {
     "type": "git",
