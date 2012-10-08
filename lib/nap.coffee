@@ -2,12 +2,7 @@ fs = require 'fs'
 path = require 'path'
 exec = require('child_process').exec
 coffee = require 'coffee-script'
-styl = require 'stylus'
-# less = require 'less'
-nib = require 'nib'
-jade = require 'jade'
 jadeRuntime = fs.readFileSync(path.resolve __dirname, '../deps/jade.runtime.js').toString()
-hogan = require 'hogan'
 hoganPrefix = fs.readFileSync(path.resolve __dirname, '../deps/hogan.js').toString()
 sqwish = require 'sqwish'
 uglifyjs = require "uglify-js"
@@ -235,9 +230,9 @@ module.exports.preprocessors = preprocessors =
       throw err
     
   '.styl': (contents, filename) ->
-    styl(contents)
+    require('stylus')(contents)
       .set('filename', process.cwd() + '/' + filename)
-      .use(nib())
+      .use(require('nib')())
       .render (err, out) ->
         throw(err) if err
         contents = out
@@ -255,10 +250,10 @@ module.exports.preprocessors = preprocessors =
 module.exports.templateParsers = templateParsers =
   
   '.jade': (contents, filename) ->
-    jade.compile(contents, { client: true, compileDebug: true })
+    require('jade').compile(contents, { client: true, compileDebug: true })
 
   '.mustache': (contents, filename) ->
-    'new Hogan.Template(' + hogan.compile(contents, { asString: true }) + ')'
+    'new Hogan.Template(' + require('hogan').compile(contents, { asString: true }) + ')'
 
 # Generates javascript template functions packed into a JST namespace
 # 
