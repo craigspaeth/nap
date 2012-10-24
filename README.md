@@ -70,7 +70,7 @@ Some express.js based examples can be found in the [examples folder](https://git
 
 `npm install nap`
 
-**NOTE: You must include individual pre-processors in your package.json to use them.**
+**You must include individual pre-processors in your package.json to use them.**
 
 ## Usage
 
@@ -128,7 +128,7 @@ nap({
 
 Nap will automatically precompile any javascript and css pre-processors based on the file extension.
 
-**NOTE: You must include individual pre-processors in your package.json to use them.**
+**You must include individual pre-processors in your package.json to use them.**
 
 Nap currently only supports the following pre-processors by default. But please feel free to contribute more.
 
