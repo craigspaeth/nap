@@ -39,7 +39,7 @@
     "should": "*",
     "wrench": "*",
     "jade": "*",
-    "hogan": "*",
+    "hogan.js": "*",
     "stylus": "*",
     "less": "*",
     "nib": "*"
