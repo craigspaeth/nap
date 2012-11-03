@@ -143,7 +143,7 @@ module.exports.package = (callback) =>
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('js', pkg, contents) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
@@ -155,7 +155,7 @@ module.exports.package = (callback) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('css', pkg, contents) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
@@ -166,7 +166,7 @@ module.exports.package = (callback) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('jst', pkg, contents) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
       if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
@@ -253,7 +253,7 @@ module.exports.templateParsers = templateParsers =
     require('jade').compile(contents, { client: true, compileDebug: true })
 
   '.mustache': (contents, filename) ->
-    'new Hogan.Template(' + require('hogan').compile(contents, { asString: true }) + ')'
+    'new Hogan.Template(' + require('hogan.js').compile(contents, { asString: true }) + ')'
 
 # Generates javascript template functions packed into a JST namespace
 # 
@@ -410,10 +410,10 @@ gzipPkg = (contents, filename, callback) =>
 # @return {String} The md5 fingerprint to append
 
 fingerprintCache = { js: {}, jst: {}, css: {} }
-module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
+module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName, pkgContents) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
+  throw new Error("nap.package() must be called before nap can be used in production mode") if pkgContents == undefined
   md5 = crypto.createHash('md5')
-  pkgContents = (fs.readFileSync(file) for file in @assets[pkgType][pkgName]).join('')
   md5.update pkgContents
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   
