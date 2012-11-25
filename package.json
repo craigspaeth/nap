@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "author": {
     "name": "Craig Spaeth",
     "email": "craigspaeth@gmail.com",
@@ -23,25 +23,25 @@
     "node": ">= 0.6.0"
   },
   "dependencies": {
-    "coffee-script": "*",
-    "underscore": "*",
-    "underscore.string": "*",
-    "uglify-js": "*",
-    "sqwish": "*",
-    "mkdirp": "*",
-    "file": "*",
-    "glob": "*",
-    "rimraf": "*"
+    "coffee-script": "~1.4.0",
+    "underscore": "~1.4.2",
+    "underscore.string": "~2.3.0",
+    "uglify-js": "~2.2.1",
+    "sqwish": "~0.2.0",
+    "mkdirp": "~0.3.4",
+    "file": "~0.2.1",
+    "glob": "~3.1.14",
+    "rimraf": "~2.0.2"
   },
   "devDependencies": {
-    "mocha": "*",
-    "should": "*",
-    "wrench": "*",
-    "jade": "*",
-    "hogan.js": "*",
-    "stylus": "*",
-    "less": "*",
-    "nib": "*"
+    "mocha": "~1.7.1",
+    "should": "~1.2.1",
+    "wrench": "~1.4.3",
+    "jade": "~0.27.7",
+    "hogan.js": "~2.0.0",
+    "stylus": "~0.31.0",
+    "less": "~1.3.1",
+    "nib": "~0.9.0"
   },
   "repository": {
     "type": "git",

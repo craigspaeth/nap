@@ -328,12 +328,7 @@ writeFile = (filename, contents) =>
 # @return {String} str Minifed js string
 
 uglify = (str) ->
-  jsp = uglifyjs.parser
-  pro = uglifyjs.uglify
-  ast = jsp.parse str
-  ast = pro.ast_mangle(ast)
-  ast = pro.ast_squeeze(ast)
-  pro.gen_code(ast)
+  uglifyjs.minify(str, { fromString: true }).code
 
 # Given the contents of a css file, replace references to url() with base64 embedded images & fonts.
 # 
