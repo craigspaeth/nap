@@ -45,18 +45,15 @@ module.exports = (options = {}) =>
   unless path.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
-  # Clear out assets directory and package assets if mode is production
+  # Clear out assets directory
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  unless @usingMiddleware
-    fs.mkdirSync process.cwd() + @_outputDir, '0755'
+  fs.mkdirSync(process.cwd() + @_outputDir, '0755') unless @usingMiddleware
   
   # Add any javascript necessary for templates (like the jade runtime)
   for filename in _.flatten @assets.jst
     ext = path.extname(filename)
     switch ext
-      
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
-      
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
   
   @
@@ -133,19 +130,19 @@ module.exports.jst = (pkg, gzip = @gzip) =>
 # Runs through all of the asset packages. Concatenates, minifies, and gzips them. Then outputs
 # the final packages. (To be run once during the build step for production)
 
-module.exports.package = (callback) =>
+module.exports.package = (callback = ->) =>
   
   total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) -> memo + num
-  finishCallback = _.after total, -> callback() if callback?
+  callback = _.after total, callback
   
   if @assets.js?
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('js', pkg, contents) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
+      if @gzip then gzipPkg(contents, filename, callback) else callback()
       total++
   
   if @assets.css?
@@ -154,10 +151,10 @@ module.exports.package = (callback) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('css', pkg, contents) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
+      if @gzip then gzipPkg(contents, filename, callback) else callback()
       total++
       
   if @assets.jst?
@@ -165,10 +162,10 @@ module.exports.package = (callback) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('jst', pkg, contents) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
-      if @gzip then gzipPkg(contents, filename, finishCallback) else finishCallback()
+      if @gzip then gzipPkg(contents, filename, callback) else callback()
       total++
 
 # Instead of compiling & writing the packages to disk, nap will compile and serve the files in 
@@ -404,10 +401,10 @@ gzipPkg = (contents, filename, callback) =>
 # @return {String} The md5 fingerprint to append
 
 fingerprintCache = { js: {}, jst: {}, css: {} }
-module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName, pkgContents) =>
+module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
-  throw new Error("nap.package() must be called before nap can be used in production mode") if pkgContents == undefined
   md5 = crypto.createHash('md5')
+  pkgContents = (fs.readFileSync(file) for file in @assets[pkgType][pkgName]).join('')
   md5.update pkgContents
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   

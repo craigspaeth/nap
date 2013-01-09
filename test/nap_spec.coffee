@@ -154,7 +154,6 @@ describe '#js', ->
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.package()
       nap.js('baz').should.include "<script src='/assets/baz"
       
     it 'returns a script tag pointing to the CDN packaged file', ->
@@ -164,7 +163,6 @@ describe '#js', ->
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.package()
       nap.js('baz').should.include "<script src='http://cdn.com/baz"
     
     it 'points to the 
@@ -175,7 +173,6 @@ describe '#js', ->
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.package()
       nap.js('baz').should.include "<script src='/assets/baz"
     
     it 'doesnt have to point to the gzipped file', ->
@@ -185,7 +182,6 @@ describe '#js', ->
         assets:
           js:
             baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
-      nap.package()
       nap.js('baz', false).should.include "<script src='/assets/baz"
     
     it 'gzips assets that have a fingerprint'
@@ -316,7 +312,6 @@ describe '#css', ->
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
-      nap.package()
       nap.css('baz').should.include "<link href=\'http://cdn.com/baz"
     
     it 'points to the gzipped file if specified', ->
@@ -326,7 +321,6 @@ describe '#css', ->
         assets:
           css:
             baz: ['/test/fixtures/1/bar.css']
-      nap.package()
       nap.css('baz').should.include "<link href=\'/assets/baz"
       
 describe '#jst', ->
@@ -433,7 +427,6 @@ describe '#jst', ->
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.package()
       nap.jst('foo').should.include "<script src='/assets/foo"
       
     it 'points to the cdn if specified', ->
@@ -443,7 +436,6 @@ describe '#jst', ->
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.package()
       nap.jst('foo').should.include "<script src='http://cdn.com/foo"
      
     it 'points to the gzipped file if specified', ->
@@ -453,7 +445,6 @@ describe '#jst', ->
         assets:
           jst:
             foo: ['/test/fixtures/1/foo.jade']
-      nap.package()
       nap.jst('foo').should.include "<script src='/assets/foo"
      
         
@@ -564,7 +555,7 @@ describe '#package', ->
     
     jsOut = readPkg 'all.js'
     jsOut.should.include "var foo=\"foo\""
-    jsOut.should.include "var e;e=\"foo\""
+    jsOut.should.include "var o;o=\"foo\""
     
     cssOut = readPkg 'default.css'
     cssOut.should.include 'red'
