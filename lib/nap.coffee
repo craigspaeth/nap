@@ -49,7 +49,6 @@ module.exports = (options = {}) =>
   rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
   unless @usingMiddleware
     fs.mkdirSync process.cwd() + @_outputDir, '0755'
-    fs.writeFileSync "#{process.cwd()}/#{@_outputDir}/.gitignore", "/*"
   
   # Add any javascript necessary for templates (like the jade runtime)
   for filename in _.flatten @assets.jst

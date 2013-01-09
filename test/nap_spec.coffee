@@ -15,12 +15,10 @@ readPkg = (pkg) ->
 
 describe 'init', ->
   
-  it 'will set up a clear assets directory with a gitignore', ->
+  it 'will set up a clear assets directory', ->
     nap(assets: {}, publicDir: '/test/fixtures/')
     dir = process.cwd() + '/test/fixtures/assets'
-    exists = path.existsSync dir
-    exists.should.be.ok
-    fs.readFileSync(process.cwd() + '/test/fixtures/assets/.gitignore', 'UTF8').should.equal '/*'
+    path.existsSync(dir).should.be.ok
     
 describe 'options.publicDir', ->
 
