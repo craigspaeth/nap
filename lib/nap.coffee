@@ -294,13 +294,10 @@ preprocess = (contents, filename) =>
 # @return {Object} A { filename: compiledContents } obj 
 
 preprocessPkg = (pkg, type) =>
-  
   obj = {}
-  
   for filename in @assets[type][pkg]
     contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
     contents = preprocess contents, filename
-    
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
@@ -404,9 +401,10 @@ fingerprintCache = { js: {}, jst: {}, css: {} }
 module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
-  pkgContents = (fs.readFileSync(file) for file in @assets[pkgType][pkgName]).join('')
+  pkgContents = (contents for filename, contents of preprocessPkg(pkgName, pkgType)).join('')
   md5.update pkgContents
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
+  
   
 # Goes through asset declarations and expands them into full file paths, globs and all.
 

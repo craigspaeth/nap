@@ -35,7 +35,7 @@ http.createServer(app).listen(app.get('port'), function(){
 // Nap configuration
 // 
 
-global.nap = require('nap');
+global.nap = require(process.cwd() + '../../lib');
 
 nap({
   mode: 'production',
@@ -49,7 +49,8 @@ nap({
     },
     css: {
       all: [
-        '/stylesheets/**/*'
+        '/stylesheets/text.styl',
+        '/stylesheets/bg.css'
       ]
     },
     jst: {

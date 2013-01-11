@@ -35,7 +35,7 @@ http.createServer(app).listen(app.get('port'), function(){
 // Nap configuration
 // 
 
-global.nap = require('nap');
+global.nap = require(process.cwd() + '../../lib');
 
 nap({
   assets: {

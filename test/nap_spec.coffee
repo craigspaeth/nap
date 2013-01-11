@@ -753,3 +753,13 @@ describe 'in dev mode', ->
     nap.css('foo').should
       .equal "<link href=\'/assets/test/fixtures/2/bar.css\' rel=\'stylesheet\' type=\'text/css\'><link href=\'/assets/test/fixtures/2/foo.css\' rel=\'stylesheet\' type=\'text/css\'>"
     
+describe '#fingerprintForPkg', ->
+  
+  it 'considers preprocessors that require external files', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/fingerprint_with_import/foo/foo.styl']
+          bar: ['/test/fixtures/fingerprint_with_import/bar/bar.styl']
+    nap.fingerprintForPkg('css', 'foo').should.not.equal nap.fingerprintForPkg('css', 'bar')
