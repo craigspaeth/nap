@@ -41,8 +41,10 @@ module.exports = (options = {}) =>
   @_tmplPrefix = 'window.JST = {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
+  @_fileMtimeMap = {}
+  @_preprocessedCache = {}
   
-  unless path.existsSync process.cwd() + @publicDir
+  unless fs.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
   # Clear out assets directory
@@ -263,9 +265,15 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   for filename in @assets.jst[pkg]
     
     # Read the file and compile it into a javascript function string
-    contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
-    ext = path.extname filename
-    contents = if templateParsers[ext]? then templateParsers[ext](contents, filename) else contents
+    fullPath = path.resolve process.cwd() + '/' + filename
+    contents = if fileHasChanged(fullPath) and templateParsers[ext]? or 
+               not  @_preprocessedCache[filename]?
+                 ext = path.extname filename
+                 data = fs.readFileSync(fullPath).toString()
+                 @_preprocessedCache[filename] = templateParsers[ext](data, filename).toString()
+                 @_preprocessedCache[filename]
+               else
+                 @_preprocessedCache[filename]
     
     # Templates in a 'templates' folder are namespaced by folder after 'templates'
     if filename.indexOf('templates') > -1
@@ -276,6 +284,17 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   
   tmplFileContents
+
+# Determine whether a file has changed since last preprocess or template parse
+# 
+# @param {String} filename
+# @return {Boolean}
+
+fileHasChanged = (filename) =>
+  mtime = fs.statSync(filename).mtime.getTime()
+  changed = @_fileMtimeMap[filename] isnt mtime
+  @_fileMtimeMap[filename] = mtime
+  changed
 
 # Run a preprocessor or pass through the contents
 # 
@@ -296,8 +315,12 @@ preprocess = (contents, filename) =>
 preprocessPkg = (pkg, type) =>
   obj = {}
   for filename in @assets[type][pkg]
-    contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
-    contents = preprocess contents, filename
+    fullPath = path.resolve process.cwd() + '/' + filename
+    contents = if fileHasChanged(fullPath) or not @_preprocessedCache[filename]?
+                 data = fs.readFileSync(fullPath).toString()
+                 @_preprocessedCache[filename] = preprocess(data, filename)
+               else
+                 @_preprocessedCache[filename]
     outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
@@ -312,7 +335,7 @@ preprocessPkg = (pkg, type) =>
 writeFile = (filename, contents) =>
   file = process.cwd() + @_outputDir + '/' + filename
   dir = path.dirname file
-  mkdirp.sync dir, '0755' unless path.existsSync dir
+  mkdirp.sync dir, '0755' unless fs.existsSync dir
   fs.writeFileSync file, contents ? ''
 
 # Runs uglify js on a string of javascript
@@ -361,7 +384,7 @@ embedFiles = (filename, contents) =>
     mime = mimes[path.extname filename]
     
     if mime?    
-      if path.existsSync filename
+      if fs.existsSync filename
         base64Str = fs.readFileSync(path.resolve filename).toString('base64')
       
         newUrl = "data:#{mime};base64,#{base64Str}"
@@ -407,7 +430,6 @@ module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   
   
 # Goes through asset declarations and expands them into full file paths, globs and all.
-
 expandAssetGlobs = =>
   assets = {js: {}, css: {}, jst: {}}
   appDir = process.cwd().replace(/\\/g, "\/")
@@ -415,8 +437,8 @@ expandAssetGlobs = =>
     for pkg, patterns of @originalAssets[key]
       matches = []
       for pattern in patterns
-        fnd = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
-        matches = matches.concat(fnd) 
+        dirs = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
+        matches = matches.concat(dirs) 
       matches = _.uniq _.flatten matches
       matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
       assets[key][pkg] = matches

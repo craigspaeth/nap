@@ -18,7 +18,7 @@ describe 'init', ->
   it 'will set up a clear assets directory', ->
     nap(assets: {}, publicDir: '/test/fixtures/')
     dir = process.cwd() + '/test/fixtures/assets'
-    path.existsSync(dir).should.be.ok
+    fs.existsSync(dir).should.be.ok
     
 describe 'options.publicDir', ->
 
@@ -35,7 +35,7 @@ describe 'options.publicDir', ->
   it 'will create an assets directory in publicDir if it doesnt exit', ->
     nap(assets: {}, publicDir: '/test/fixtures/')
     dir = process.cwd() + '/test/fixtures/assets'
-    exists = path.existsSync dir
+    exists = fs.existsSync dir
     exists.should.be.ok 
     
 describe 'mode', ->
@@ -114,7 +114,7 @@ describe '#js', ->
       nap.js('bar').should
         .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
       fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/bar.js')
-        .toString().should.match /var/  
+        .toString().should.match /var/
     
     it 'returns multiple script tags put together', ->
       nap
@@ -143,7 +143,18 @@ describe '#js', ->
         nap.js('bar')
       catch e
         e.stack.should.include 'Nap error compiling test/fixtures/bad/bad_coffee.coffee'
-      
+    
+    it 'compiles files when called twice in a row', ->
+      nap
+        assets:
+          js:
+            bar: ['/test/fixtures/1/bar.coffee']
+      nap.js('bar')
+      nap.js('bar').should
+        .equal "<script src='/assets/test/fixtures/1/bar.js' type='text/javascript'></script>"
+      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/bar.js')
+        .toString().should.match /var/
+    
     it 'only compiles files that have been changed since they were last touched'
     
   describe 'in production mode', ->
@@ -378,6 +389,16 @@ describe '#jst', ->
       nap.jst('foo')
       fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
         .indexOf("JST['index/foo']").should.not.equal -1
+        
+    it 'works twice in a row', ->
+      nap
+        assets:
+          jst:
+            foo: ['/test/fixtures/templates/index/foo.jade']
+      nap.jst('foo')
+      nap.jst('foo')
+      fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+        .indexOf("JST['index/foo']").should.not.equal -1
     
     describe 'using jade', ->
       
@@ -572,7 +593,7 @@ describe '#package', ->
         css:
           default: ['/test/fixtures/1/bar.css', '/test/fixtures/1/imgs_embed.styl']
     nap.package ->
-      path.existsSync '/public/assets/default.css.cgz'
+      fs.existsSync '/public/assets/default.css.cgz'
       done()
   
   it 'adds the jade runtime', ->
@@ -677,7 +698,7 @@ describe '#middleware',  ->
     nap.js('foo')
     nap.jst('foo')
     nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
-    path.existsSync("#{process.cwd()}/public/assets").should.not.be.ok
+    fs.existsSync("#{process.cwd()}/public/assets").should.not.be.ok
   
   it 'just goes on to the next in production', ->
     nap
