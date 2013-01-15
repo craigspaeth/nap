@@ -812,3 +812,23 @@ describe '#fingerprintForPkg', ->
           foo: ['/test/fixtures/fingerprint_with_import/foo/foo.styl']
           bar: ['/test/fixtures/fingerprint_with_import/bar/bar.styl']
     nap.fingerprintForPkg('css', 'foo').should.not.equal nap.fingerprintForPkg('css', 'bar')
+  
+  it 'matches the generated fingerprint', ->
+    nap
+      mode: 'production'
+      assets:
+        css:
+          foo: ['/test/fixtures/fingerprint_with_import/foo/foo.styl']
+    nap.package()
+    writtenFingerprint = fs.readdirSync(process.cwd() + '/public/assets/')[0].split(/-|\./)[1]
+    writtenFingerprint.should.equal nap.fingerprintForPkg('css', 'foo')
+  
+  it 'works with templates', ->
+      nap
+        mode: 'production'
+        assets:
+          jst:
+            foo: ['/test/fixtures/fingerprint_with_import/baz/**/*.jade']
+      nap.package()
+      writtenFingerprint = fs.readdirSync(process.cwd() + '/public/assets/')[0].split(/-|\./)[1]
+      writtenFingerprint.should.equal nap.fingerprintForPkg('jst', 'foo')

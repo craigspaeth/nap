@@ -424,7 +424,11 @@ fingerprintCache = { js: {}, jst: {}, css: {} }
 module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
-  pkgContents = (contents for filename, contents of preprocessPkg(pkgName, pkgType)).join('')
+  pkg = if pkgType is 'css' or pkgType is 'js'
+          preprocessPkg(pkgName, pkgType)
+        else
+          @assets[pkgType][pkgName]
+  pkgContents = (contents for filename, contents of pkg).join('')
   md5.update pkgContents
   fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   
