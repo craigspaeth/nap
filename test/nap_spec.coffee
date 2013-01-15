@@ -832,3 +832,23 @@ describe '#fingerprintForPkg', ->
       nap.package()
       writtenFingerprint = fs.readdirSync(process.cwd() + '/public/assets/')[0].split(/-|\./)[1]
       writtenFingerprint.should.equal nap.fingerprintForPkg('jst', 'foo')
+      
+  it 'generates unique fingerprints for changed template packages', ->
+    path = process.cwd() + '/test/fixtures/fingerprint_with_import/baz/foo.jade'
+    checkFingerPrint = (data) ->
+      nap
+        mode: 'production'
+        assets:
+          jst:
+            foo: ['/test/fixtures/fingerprint_with_import/baz/**/*.jade']
+      fs.writeFileSync path, data
+      nap.fingerprintForPkg('jst', 'foo')
+    f1 = checkFingerPrint """
+      h1 Hai
+      h2 Bai
+    """
+    f2 = checkFingerPrint """
+      h3 Bai
+      h4 Hai
+    """
+    f1.should.not.equal f2

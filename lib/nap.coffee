@@ -43,6 +43,7 @@ module.exports = (options = {}) =>
   @_outputDir = path.normalize @publicDir + @_assetsDir
   @_fileMtimeMap = {}
   @_preprocessedCache = {}
+  @_fingerprintCache = { js: {}, jst: {}, css: {} }
   
   unless fs.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
@@ -420,17 +421,15 @@ gzipPkg = (contents, filename, callback) =>
 # @param {String} pkgName The name of the package
 # @return {String} The md5 fingerprint to append
 
-fingerprintCache = { js: {}, jst: {}, css: {} }
 module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
-  return fingerprintCache[pkgType][pkgName] if fingerprintCache[pkgType][pkgName]?
+  return @_fingerprintCache[pkgType][pkgName] if @_fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
-  pkg = if pkgType is 'css' or pkgType is 'js'
-          preprocessPkg(pkgName, pkgType)
-        else
-          @assets[pkgType][pkgName]
-  pkgContents = (contents for filename, contents of pkg).join('')
+  if pkgType is 'css' or pkgType is 'js'
+    pkgContents = (contents for filename, contents of preprocessPkg(pkgName, pkgType)).join('')
+  else
+    pkgContents = generateJSTs pkgName
   md5.update pkgContents
-  fingerprintCache[pkgType][pkgName] = md5.digest('hex')
+  @_fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   
   
 # Goes through asset declarations and expands them into full file paths, globs and all.
