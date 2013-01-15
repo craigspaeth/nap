@@ -424,10 +424,10 @@ gzipPkg = (contents, filename, callback) =>
 module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
   return @_fingerprintCache[pkgType][pkgName] if @_fingerprintCache[pkgType][pkgName]?
   md5 = crypto.createHash('md5')
-  if pkgType is 'css' or pkgType is 'js'
-    pkgContents = (contents for filename, contents of preprocessPkg(pkgName, pkgType)).join('')
-  else
-    pkgContents = generateJSTs pkgName
+  pkgContents = if pkgType is 'css' or pkgType is 'js'
+                  (contents for filename, contents of preprocessPkg(pkgName, pkgType)).join('')
+                else
+                  generateJSTs pkgName
   md5.update pkgContents
   @_fingerprintCache[pkgType][pkgName] = md5.digest('hex')
   
