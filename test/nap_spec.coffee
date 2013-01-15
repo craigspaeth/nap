@@ -492,9 +492,37 @@ describe '#package', ->
       nap.package()
       fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
         .should.include "var jade ="
+        
+    it 'adds the jade runtime once', ->
+      nap
+        mode: 'development'
+        assets:
+          jst:
+            templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+      nap.package()
+      fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
+        .match(/var jade =/g).length.should.equal 1
   
   describe 'when in production mode', ->
-  
+    
+    it 'adds the jade runtime once', ->
+      nap
+        mode: 'production'
+        assets:
+          jst:
+            templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+      nap.package()
+      readPkg('templates.jst.js').toString().match(/var jade=function/g).length.should.equal 1
+      
+    it 'includes the JST namespace', ->
+      nap
+        mode: 'production'
+        assets:
+          jst:
+            templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+      nap.package()
+      readPkg('templates.jst.js').should.include 'JST='
+    
     it 'minifies js', ->
       nap
         mode: 'production'

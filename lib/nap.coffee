@@ -52,8 +52,8 @@ module.exports = (options = {}) =>
   fs.mkdirSync(process.cwd() + @_outputDir, '0755') unless @usingMiddleware
   
   # Add any javascript necessary for templates (like the jade runtime)
-  for filename in _.flatten @assets.jst
-    ext = path.extname(filename)
+  exts = _.uniq(ext = path.extname(filename) for filename in _.flatten @assets.jst)
+  for ext in exts
     switch ext
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
