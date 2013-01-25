@@ -271,9 +271,9 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     
     # Read the file and compile it into a javascript function string
     fullPath = path.resolve process.cwd() + '/' + filename
+    ext = path.extname filename
     contents = if fileHasChanged(fullPath) and templateParsers[ext]? or 
                not  @_preprocessedCache[filename]?
-                 ext = path.extname filename
                  data = fs.readFileSync(fullPath).toString()
                  @_preprocessedCache[filename] = templateParsers[ext](data, filename).toString()
                  @_preprocessedCache[filename]

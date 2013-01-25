@@ -400,8 +400,24 @@ describe '#jst', ->
       nap.jst('foo')
       nap.jst('foo')
       fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-        .indexOf("JST['index/foo']").should.not.equal -1
-    
+        .should.include "JST['index/foo']"
+        
+    it 'works when the file has changed', (done) ->
+      dir = '/test/fixtures/templates/index/foo.jade'
+      nap
+        assets:
+          jst:
+            foo: [dir]
+      fs.writeFileSync (process.cwd() + dir), 'h2 Hello #{world}'
+      nap.jst('foo')
+      fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString().should.include "h2"
+      setTimeout (->
+        fs.writeFileSync (process.cwd() + dir), 'h1 Hello #{world}'
+        nap.jst('foo')
+        fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString().should.include "h1"
+        done()
+      ), 500
+      
     describe 'using jade', ->
       
       it 'adds the jade runtime by default', ->
