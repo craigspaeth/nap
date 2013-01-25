@@ -49,8 +49,9 @@ module.exports = (options = {}) =>
     throw new Error "The directory #{@publicDir} doesn't exist"
   
   # Clear out assets directory
-  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync(process.cwd() + @_outputDir, '0755') unless @usingMiddleware
+  if @mode is 'development'
+    rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
+    fs.mkdirSync(process.cwd() + @_outputDir, '0755') unless @usingMiddleware
   
   # Add any javascript necessary for templates (like the jade runtime)
   exts = _.uniq(ext = path.extname(filename) for filename in _.flatten @assets.jst)

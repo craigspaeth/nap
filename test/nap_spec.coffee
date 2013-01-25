@@ -4,6 +4,7 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
+rimraf = require 'rimraf'
 
 # Read a package despite it's fingerprint
 readPkg = (pkg) ->
@@ -12,13 +13,6 @@ readPkg = (pkg) ->
   dir = process.cwd() + '/public/assets/'
   file = _(fs.readdirSync(dir)).select((file) -> file.match /// #{name}.*#{ext} ///)[0]
   fs.readFileSync(dir + file).toString()
-
-describe 'init', ->
-  
-  it 'will set up a clear assets directory', ->
-    nap(assets: {}, publicDir: '/test/fixtures/')
-    dir = process.cwd() + '/test/fixtures/assets'
-    fs.existsSync(dir).should.be.ok
     
 describe 'options.publicDir', ->
 
@@ -470,6 +464,10 @@ describe '#jst', ->
      
         
 describe '#package', ->
+  
+  beforeEach ->
+    rimraf.sync "#{process.cwd()}/public/assets"
+    fs.mkdirSync(process.cwd() + '/public/assets', '0755') unless @usingMiddleware
   
   it 'doesnt minify in anything but production', ->
     nap
