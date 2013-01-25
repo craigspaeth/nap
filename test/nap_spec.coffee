@@ -416,7 +416,7 @@ describe '#jst', ->
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString().should.include "h1"
         done()
-      ), 500
+      ), 1000
       
     describe 'using jade', ->
       

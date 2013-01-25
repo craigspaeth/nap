@@ -59,10 +59,6 @@ module.exports = (options = {}) =>
   
   @
 
-clearAssetsDir = =>
-  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync(process.cwd() + @_outputDir, '0755')
-
 # Run js pre-processors & output the packages in dev.
 # 
 # @param {String} pkg The name of the package to output
@@ -450,3 +446,9 @@ expandAssetGlobs = =>
       matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
       assets[key][pkg] = matches
   @assets = assets
+
+# Deletes all of the files in the assets directory.
+
+clearAssetsDir = =>
+  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
+  fs.mkdirSync(process.cwd() + @_outputDir, '0755')
