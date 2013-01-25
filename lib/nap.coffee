@@ -48,11 +48,8 @@ module.exports = (options = {}) =>
   unless fs.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
-  # Clear out assets directory
-  if @mode is 'development'
-    rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-    fs.mkdirSync(process.cwd() + @_outputDir, '0755') unless @usingMiddleware
-  
+  clearAssetsDir() if @mode is 'development'
+
   # Add any javascript necessary for templates (like the jade runtime)
   exts = _.uniq(ext = path.extname(filename) for filename in _.flatten @assets.jst)
   for ext in exts
@@ -61,6 +58,10 @@ module.exports = (options = {}) =>
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
   
   @
+
+clearAssetsDir = =>
+  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
+  fs.mkdirSync(process.cwd() + @_outputDir, '0755')
 
 # Run js pre-processors & output the packages in dev.
 # 
@@ -135,6 +136,8 @@ module.exports.jst = (pkg, gzip = @gzip) =>
 # the final packages. (To be run once during the build step for production)
 
 module.exports.package = (callback = ->) =>
+  
+  clearAssetsDir()
   
   total = _.reduce (_.values(pkgs).length for key, pkgs of @assets), (memo, num) -> memo + num
   callback = _.after total, callback

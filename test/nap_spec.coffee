@@ -4,7 +4,6 @@ fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
 exec = require('child_process').exec
-rimraf = require 'rimraf'
 
 # Read a package despite it's fingerprint
 readPkg = (pkg) ->
@@ -152,6 +151,15 @@ describe '#js', ->
     it 'only compiles files that have been changed since they were last touched'
     
   describe 'in production mode', ->
+    
+    it 'keeps files in the assets dir', ->
+      fs.writeFileSync "#{process.cwd()}/public/assets/foobar.txt", 'foobar'
+      nap
+        mode: 'production'
+        assets:
+          js:
+            baz: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+      fs.readFileSync("#{process.cwd()}/public/assets/foobar.txt", 'utf8').should.equal 'foobar'
     
     it 'returns a script tag pointing to the packaged file', ->
       nap
@@ -465,10 +473,6 @@ describe '#jst', ->
         
 describe '#package', ->
   
-  beforeEach ->
-    rimraf.sync "#{process.cwd()}/public/assets"
-    fs.mkdirSync(process.cwd() + '/public/assets', '0755') unless @usingMiddleware
-  
   it 'doesnt minify in anything but production', ->
     nap
       mode: 'test'
@@ -724,7 +728,7 @@ describe '#middleware',  ->
     nap.js('foo')
     nap.jst('foo')
     nap.middleware { url: '/assets/test/fixtures/1/bar.css' }, { end: (data) -> }, ->
-    fs.existsSync("#{process.cwd()}/public/assets").should.not.be.ok
+    fs.readdirSync("#{process.cwd()}/public/assets").length is 0
   
   it 'just goes on to the next in production', ->
     nap
