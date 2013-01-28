@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "author": {
     "name": "Craig Spaeth",
     "email": "craigspaeth@gmail.com",
@@ -30,7 +30,8 @@
     "sqwish": "~0.2.0",
     "mkdirp": "~0.3.4",
     "file": "~0.2.1",
-    "glob": "~3.1.14"
+    "glob": "~3.1.14",
+    "rimraf": "~2.0.2"
   },
   "devDependencies": {
     "mocha": "~1.7.1",
