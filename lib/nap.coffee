@@ -254,6 +254,10 @@ module.exports.templateParsers = templateParsers =
   '.mustache': (contents, filename) ->
     'new Hogan.Template(' + require('hogan.js').compile(contents, { asString: true }) + ')'
 
+  '.mustache.jade': (contents, filename) ->
+    jadeOutput = require('jade').compile(contents)()
+    'new Hogan.Template(' + require('hogan.js').compile( jadeOutput , { asString: true }) + ')'
+
 # Generates javascript template functions packed into a JST namespace
 # 
 # @param {String} pkg The package name to generate from
@@ -262,16 +266,27 @@ module.exports.templateParsers = templateParsers =
 module.exports.generateJSTs = generateJSTs = (pkg) =>
   
   tmplFileContents = ''
+
+  # Create a list of available parsers, ordering them 
+  # from specific to less-specific
+  exts = _.keys( templateParsers )
+  parsers = _.sortBy exts, (ext) ->
+    return ext.match(/\./g).length
+  parsers.reverse()
   
   for filename in @assets.jst[pkg]
     
     # Read the file and compile it into a javascript function string
     fullPath = path.resolve process.cwd() + '/' + filename
-    ext = path.extname filename
-    contents = if fileHasChanged(fullPath) and templateParsers[ext]? or 
+
+    # Find the appropriate parser for the file
+    parser = _.find parsers, (parser) ->
+      _.endsWith filename, parser
+
+    contents = if fileHasChanged(fullPath) and parser? or 
                not  @_preprocessedCache[filename]?
                  data = fs.readFileSync(fullPath).toString()
-                 @_preprocessedCache[filename] = templateParsers[ext](data, filename).toString()
+                 @_preprocessedCache[filename] = templateParsers[parser](data, filename).toString()
                  @_preprocessedCache[filename]
                else
                  @_preprocessedCache[filename]
