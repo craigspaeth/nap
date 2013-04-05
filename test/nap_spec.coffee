@@ -456,7 +456,19 @@ describe '#jst', ->
               foo: ['/test/fixtures/1/foo.mustache']
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-          .should.include "<h1>Hello"
+          .should.include "<h1>Hello"    
+
+    describe 'using combined mustache and jade templates', ->
+      
+      it 'compiles .mustache.jade templates into JST functions', ->
+        nap
+          assets:
+            jst:
+              foo: ['/test/fixtures/1/foo.mustache.jade']
+        nap.jst('foo')
+        template = fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+        template.should.include "<h1>Hello"
+        template.should.not.include "{{world}}"
         
   describe 'in production', ->
   
