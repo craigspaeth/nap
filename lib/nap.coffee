@@ -21,6 +21,8 @@ zlib = require 'zlib'
 # @param {Object} options An obj of configuration options
 # @return {Function} Returns itself for chainability
 
+@currentDir = path.join(__dirname, '..', '..', '..')
+
 module.exports = (options = {}) =>
 
   # Expand asset globs
@@ -46,7 +48,9 @@ module.exports = (options = {}) =>
   @_preprocessedCache = {}
   @_fingerprintCache = { js: {}, jst: {}, css: {} }
 
-  unless fs.existsSync process.cwd() + @publicDir
+
+
+  unless fs.existsSync path.join(__dirname, '..', '..', '..', @publicDir)
     throw new Error "The directory #{@publicDir} doesn't exist"
 
   clearAssetsDir() if @mode is 'development'
@@ -121,8 +125,8 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   expandAssetGlobs()
 
   unless @usingMiddleware
-    fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
-    fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplPrefix
+    fs.writeFileSync (@currentDir + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
+    fs.writeFileSync (@currentDir + @_outputDir + '/nap-templates-prefix.js'), @_tmplPrefix
 
   """
   <script src='#{@_assetsDir}/nap-templates-prefix.js' type='text/javascript'></script>
@@ -190,7 +194,7 @@ module.exports.middleware = (req, res, next) =>
       for pkg, filenames of @assets.css
         for filename in filenames
           if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = fs.readFileSync(path.resolve @currentDir + '/' + filename).toString()
             contents = preprocess contents, filename
             res.end contents
             return
@@ -210,7 +214,7 @@ module.exports.middleware = (req, res, next) =>
       for pkg, filenames of @assets.js
         for filename in filenames
           if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = fs.readFileSync(path.resolve @currentDir + '/' + filename).toString()
             contents = preprocess contents, filename
             res.end contents
             return
@@ -231,7 +235,7 @@ module.exports.preprocessors = preprocessors =
 
   '.styl': (contents, filename) ->
     require('stylus')(contents)
-      .set('filename', process.cwd() + '/' + filename)
+      .set('filename', @currentDir + '/' + filename)
       .use(require('nib')())
       .render (err, out) ->
         throw(err) if err
@@ -278,7 +282,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   for filename in @assets.jst[pkg]
 
     # Read the file and compile it into a javascript function string
-    fullPath = path.resolve process.cwd() + '/' + filename
+    fullPath = path.resolve @currentDir + '/' + filename
 
     # Find the appropriate parser for the file
     parser = _.find parsers, (parser) ->
@@ -332,7 +336,7 @@ preprocess = (contents, filename) =>
 preprocessPkg = (pkg, type) =>
   obj = {}
   for filename in @assets[type][pkg]
-    fullPath = path.resolve process.cwd() + '/' + filename
+    fullPath = path.resolve @currentDir + '/' + filename
     contents = if fileHasChanged(fullPath) or not @_preprocessedCache[filename]?
                  data = fs.readFileSync(fullPath).toString()
                  @_preprocessedCache[filename] = preprocess(data, filename)
@@ -350,7 +354,7 @@ preprocessPkg = (pkg, type) =>
 # @return {String} The new full directory of the output file
 
 writeFile = (filename, contents) =>
-  file = process.cwd() + @_outputDir + '/' + filename
+  file = @currentDir + @_outputDir + '/' + filename
   dir = path.dirname file
   mkdirp.sync dir, '0755' unless fs.existsSync dir
   fs.writeFileSync file, contents ? ''
@@ -397,7 +401,7 @@ embedFiles = (filename, contents) =>
     start = offsetContents.indexOf('url(') + 4 + offset
     end = contents.substring(start, contents.length).indexOf(')') + start
     filename = _.trim _.trim(contents.substring(start, end), '"'), "'"
-    filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
+    filename = @currentDir + @publicDir + '/' + filename.replace /^\//, ''
     mime = mimes[path.extname filename]
 
     if mime?
@@ -424,7 +428,7 @@ embedFiles = (filename, contents) =>
 # @param {Function} callback The callback after gzipping
 
 gzipPkg = (contents, filename, callback) =>
-  file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+  file = "#{@currentDir + @_outputDir + '/'}#{filename}"
   ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
   outputFilename = file + ext
   zlib.gzip contents, (err, buf) ->
@@ -451,7 +455,7 @@ module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
 # Goes through asset declarations and expands them into full file paths, globs and all.
 expandAssetGlobs = =>
   assets = {js: {}, css: {}, jst: {}}
-  appDir = process.cwd().replace(/\\/g, "\/")
+  appDir = @currentDir.replace(/\\/g, "\/")
   for key, obj of @originalAssets
     for pkg, patterns of @originalAssets[key]
       matches = []
@@ -466,5 +470,5 @@ expandAssetGlobs = =>
 # Deletes all of the files in the assets directory.
 
 clearAssetsDir = =>
-  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync(process.cwd() + @_outputDir, '0755')
+  rimraf.sync "#{path.join(__dirname, '..', '..', '..')}/#{@publicDir}/assets"
+  fs.mkdirSync(path.join(__dirname, '..', '..', '..') + @_outputDir, '0755')
