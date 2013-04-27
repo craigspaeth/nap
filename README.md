@@ -13,8 +13,8 @@ nap({
   assets: {
     js: {
       backbone: [
-        '/app/coffeescripts/models/**/*', 
-        '/app/coffeescripts/views/**/*', 
+        '/app/coffeescripts/models/**/*',
+        '/app/coffeescripts/views/**/*',
         '/app/coffeescripts/routers/**/*'
       ]
     },
@@ -83,15 +83,18 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 #### assets
 the assets object containing all of your package declarations
 #### publicDir
-_defaults to */public*_  
+_defaults to */public*_
 your public directory where you serve static content
+#### uglify
+_defaults to true
+to uglify your JS and JST content
 #### mode
-_defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'_  
+_defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'_
 the mode you want nap to be in 'production' or 'development'
 #### cdnUrl
 If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
 #### gzip
-_defaults to false_  
+_defaults to false_
 Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 
 ````javascript
@@ -135,7 +138,7 @@ Nap currently only supports the following pre-processors by default. But please 
   * [Coffeescript](http://jashkenas.github.com/coffee-script/) (.coffee)
   * [Stylus](https://github.com/LearnBoost/stylus) (.styl)
   * [Less](https://github.com/cloudhead/less.git) (.less)
-  
+
 ### Adding your own preprocessors
 
 You can add your own preprocessors to nap by extending `nap.preprocessors`, with a fileExtension: preprocessFunction pair.
@@ -152,7 +155,7 @@ nap.preprocessors['.coffee'] = function(contents) { return coffee.compile(conten
 
 To embed fonts and images simply suffix your stylesheet with `_embed`, e.g. `fonts_embed.styl`. In "production" mode nap will read files inside `url()` declarations from your public directory and embed it in your stylesheet using [data-uri](http://css-tricks.com/data-uris/).
 
-## Client-side Javascript Templating (JSTs) 
+## Client-side Javascript Templating (JSTs)
 
 *jst* packages will run the appropriate template parser based off the file extension. Nap will then namespace your client-side templates into a global `JST['file/path']` function, much like [Jammit](http://documentcloud.github.com/jammit/#jst). The namespace is the directory following *templates* without the file extension.
 
@@ -172,8 +175,8 @@ e.g.
 ````javascript
 var nap = require('nap')
   , jade = require('jade');
-nap.templateParsers['.jade'] = function(contents) { 
-  return jade.compile(contents, { client: true, compileDebug: true }); 
+nap.templateParsers['.jade'] = function(contents) {
+  return jade.compile(contents, { client: true, compileDebug: true });
 };
 ````
 
@@ -186,13 +189,13 @@ Nap has two modes 'development' and 'production'.
 In development, nap will run any pre-processors and output a bunch of individual `<script>` and `<link>` tags using one of it's helpers (`nap.js('package-name')`, `nap.css('package-name')`, `nap.jst('package-name')`). Each time these helpers are called they will re-compile these files, resulting in seamless asset compilation on page refresh.
 
 ### Production
-  
+
 In production mode calling `nap.package()` will concatenate all of the files, minify, and finally output the result to a single package file (e.g. *public/assets/package-name.js-<fingerprint>*). Nap will also append a fingerprint for cache busting. See the Rails asset pipeline [1.2 What is Fingerprinting and Why Should I Care?](http://guides.rubyonrails.org/asset_pipeline.html) for details on how this works.
-  
+
 `nap.package(function(){})` can also take a callback if you need to do something after assets have finished packaging.
 
 Calling one of nap's helpers in production mode will simply return a `<script>` or `<link>` tag pointing to the concatenated package file.
-  
+
 You may also gzip, embed images & fonts, and point to a CDN. See **options** above for more info.
 
 ## Middleware
