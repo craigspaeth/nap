@@ -38,6 +38,7 @@ module.exports = (options = {}) =>
     else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
   @gzip = options.gzip ? false
+  @minify = options.minify ? true
   @_tmplPrefix = 'window.JST = window.JST || {};\n'
   @_assetsDir = '/assets'
   @_outputDir = path.normalize @publicDir + @_assetsDir
@@ -141,7 +142,7 @@ module.exports.package = (callback = ->) =>
   if @assets.js?
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
-      contents = uglify contents if @mode is 'production'
+      contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
@@ -164,7 +165,7 @@ module.exports.package = (callback = ->) =>
     for pkg, files of @assets.jst
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
-      contents = uglify contents if @mode is 'production'
+      contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents

@@ -93,6 +93,9 @@ If you are using a CDN you can pass the url root of where your asset packages ar
 #### gzip
 _defaults to false_  
 Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
+#### minify
+_defaults to true_  
+Opt out of minifying your code when calling `package`.
 
 ````javascript
 nap({

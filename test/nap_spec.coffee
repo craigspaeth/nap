@@ -506,11 +506,22 @@ describe '#package', ->
       mode: 'test'
       assets:
         js:
-          all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+          all: ['/test/fixtures/1/bar.coffee']
     nap.package()
-    fs.readFileSync(process.cwd() + '/public/assets/all.js').toString()
-      .indexOf("var a;a=\"foo\"}").should.equal -1
+    fs.readFileSync(process.cwd() + '/public/assets/all.js').toString().should.include 'var foo'
   
+  it 'doesnt minfiy if passed the option', ->
+    nap
+      mode: 'production'
+      minify: false
+      assets:
+        js:
+          all: ['/test/fixtures/1/bar.coffee']
+    nap.package()
+    fs.readFileSync(
+      process.cwd() + '/public/assets/' + fs.readdirSync(process.cwd() + '/public/assets/')[0]
+    ).toString().should.include 'var foo'
+      
   describe 'when in development mode', ->
     
     it 'adds the jade runtime', ->
