@@ -508,7 +508,7 @@ describe '#package', ->
         js:
           all: ['/test/fixtures/1/bar.coffee']
     nap.package()
-    fs.readFileSync(process.cwd() + '/public/assets/all.js').toString().should.include 'var foo'
+    readPkg('all.js').toString().should.include 'var foo'
   
   it 'doesnt minfiy if passed the option', ->
     nap
@@ -531,8 +531,7 @@ describe '#package', ->
           jst:
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-        .should.include "var jade ="
+      readPkg('templates.jst.js').toString().should.include "var jade ="
         
     it 'adds the jade runtime once', ->
       nap
@@ -541,8 +540,17 @@ describe '#package', ->
           jst:
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
       nap.package()
-      fs.readFileSync(process.cwd() + '/public/assets/templates.jst.js').toString()
-        .match(/var jade =/g).length.should.equal 1
+      readPkg('templates.jst.js').toString().match(/var jade =/g).length.should.equal 1
+        
+    it 'fingerprints packages', ->
+      nap
+        mode: 'development'
+        assets:
+          jst:
+            templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
+      nap.package()
+      fs.readdirSync(process.cwd() + '/public/assets')[0]
+        .should.include 'templates-a040619289181652feee66cac24f7b26'
   
   describe 'when in production mode', ->
     

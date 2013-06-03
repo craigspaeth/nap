@@ -143,7 +143,7 @@ module.exports.package = (callback = ->) =>
     for pkg, files of @assets.js
       contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('')
       contents = uglify contents if @mode is 'production' and @minify
-      fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('js', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.js"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, callback) else callback()
@@ -155,7 +155,7 @@ module.exports.package = (callback = ->) =>
         embedFiles filename, contents
       ).join('')
       contents = sqwish.minify contents if @mode is 'production'
-      fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('css', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.css"
       writeFile filename, contents
       if @gzip then gzipPkg(contents, filename, callback) else callback()
@@ -166,7 +166,7 @@ module.exports.package = (callback = ->) =>
       contents = generateJSTs pkg
       contents = @_tmplPrefix + contents
       contents = uglify contents if @mode is 'production' and @minify
-      fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
+      fingerprint = '-' + fingerprintForPkg('jst', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
       writeFile filename , contents
       if @gzip then gzipPkg(contents, filename, callback) else callback()
