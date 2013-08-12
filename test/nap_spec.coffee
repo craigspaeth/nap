@@ -731,7 +731,7 @@ describe 'preprocessors', ->
         css:
           tables: ['/test/fixtures/1/foo.fliptable']
     nap.preprocessors['.fliptable'] = (contents) ->
-      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split('\n')).join('')
+      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split(require('os').EOL)).join('')
     nap.css('tables')
     fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
       .toString().should.equal (
