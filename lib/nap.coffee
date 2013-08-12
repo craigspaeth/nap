@@ -45,6 +45,7 @@ module.exports = (options = {}) =>
   @_fileMtimeMap = {}
   @_preprocessedCache = {}
   @_fingerprintCache = { js: {}, jst: {}, css: {} }
+  @getNamespace = options.getNamespace ? @defaultGetNamespace
   
   unless fs.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
@@ -259,6 +260,18 @@ module.exports.templateParsers = templateParsers =
     jadeOutput = require('jade').compile(contents)()
     'new Hogan.Template(' + require('hogan.js').compile( jadeOutput , { asString: true }) + ')'
 
+# Get namespace for render JST
+#
+# @param {String} filename The template filename
+# @return {String} namespace Processed template filename
+
+@defaultGetNamespace = (filename) ->
+    # Templates in a 'templates' folder are namespaced by folder after 'templates'
+    if filename.indexOf('templates') > -1
+      namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
+    else
+      namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
+
 # Generates javascript template functions packed into a JST namespace
 # 
 # @param {String} pkg The package name to generate from
@@ -292,12 +305,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
                else
                  @_preprocessedCache[filename]
     
-    # Templates in a 'templates' folder are namespaced by folder after 'templates'
-    if filename.indexOf('templates') > -1
-      namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
-    else
-      namespace = filename.split('/')[-1..][0].replace /^\/|\..*/g, ''
-    
+    namespace = @getNamespace filename
     tmplFileContents += "JST['#{namespace}'] = #{contents};\n"
   
   tmplFileContents

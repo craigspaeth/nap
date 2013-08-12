@@ -497,6 +497,17 @@ describe '#jst', ->
           jst:
             foo: ['/test/fixtures/1/foo.jade']
       nap.jst('foo').should.include "<script src='/assets/foo"
+
+  it 'getNamespace', ->
+    nap
+      getNamespace: (filename) ->
+        "custom-#{filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''}"
+      assets:
+        jst:
+          foo: ['/test/fixtures/templates/index/foo.mustache']
+    nap.jst('foo')
+    fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
+      .should.include "JST['custom-index/foo']"
      
         
 describe '#package', ->
@@ -720,7 +731,7 @@ describe 'preprocessors', ->
         css:
           tables: ['/test/fixtures/1/foo.fliptable']
     nap.preprocessors['.fliptable'] = (contents) ->
-      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split('\n')).join('')
+      (sentence + "(╯°□°)╯︵ ┻━┻ " for sentence in contents.split(require('os').EOL)).join('')
     nap.css('tables')
     fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
       .toString().should.equal (
