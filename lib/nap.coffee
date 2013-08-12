@@ -45,7 +45,7 @@ module.exports = (options = {}) =>
   @_fileMtimeMap = {}
   @_preprocessedCache = {}
   @_fingerprintCache = { js: {}, jst: {}, css: {} }
-  @getNamespace = options.getNamespace if options.getNamespace
+  @getNamespace = options.getNamespace ? @defaultGetNamespace
   
   unless fs.existsSync process.cwd() + @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
@@ -265,7 +265,7 @@ module.exports.templateParsers = templateParsers =
 # @param {String} filename The template filename
 # @return {String} namespace Processed template filename
 
-@getNamespace = (filename) ->
+@defaultGetNamespace = (filename) ->
     # Templates in a 'templates' folder are namespaced by folder after 'templates'
     if filename.indexOf('templates') > -1
       namespace = filename.split('templates')[-1..][0].replace /^\/|\..*/g, ''
