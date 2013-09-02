@@ -300,6 +300,8 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
     contents = if fileHasChanged(fullPath) and parser? or 
                not  @_preprocessedCache[filename]?
                  data = fs.readFileSync(fullPath).toString()
+                 # Remove potential UTF Byte Order Mark
+                 data = data.replace(/^\uFEFF/, '')
                  @_preprocessedCache[filename] = templateParsers[parser](data, filename).toString()
                  @_preprocessedCache[filename]
                else
