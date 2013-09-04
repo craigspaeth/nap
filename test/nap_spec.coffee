@@ -445,7 +445,7 @@ describe '#jst', ->
               foo: ['/test/fixtures/1/foo.jade']
         nap.jst('foo')
         fs.readFileSync(process.cwd() + '/public/assets/foo.jst.js').toString()
-          .should.include "buf.push('<h2>"
+          .should.include "<h2>"
     
     describe 'using hogan', ->
       
@@ -561,7 +561,7 @@ describe '#package', ->
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
       nap.package()
       fs.readdirSync(process.cwd() + '/public/assets')[0]
-        .should.include 'templates-a040619289181652feee66cac24f7b26'
+        .should.include 'templates-1d711dc015d82ae14adf4af151167d41'
   
   describe 'when in production mode', ->
     
@@ -591,7 +591,7 @@ describe '#package', ->
             all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
       
       nap.package()
-      readPkg('all.js').should.include "var e;e=\"foo\"}"
+      readPkg('all.js').should.include "var o;o=\"foo\"}"
       
     it 'minifies jsts', ->
       nap

@@ -1,5 +1,4 @@
 --require should
 --reporter dot
 --ui bdd
---ignore-leaks
 --compilers coffee:coffee-script
