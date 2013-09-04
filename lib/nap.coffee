@@ -7,7 +7,7 @@ hoganPrefix = fs.readFileSync(path.resolve __dirname, '../deps/hogan.js').toStri
 sqwish = require 'sqwish'
 uglifyjs = require "uglify-js"
 _ = require 'underscore'
-_.mixin require 'underscore.string'
+_str = require 'underscore.string'
 mkdirp = require 'mkdirp'
 fileUtil = require 'file'
 glob = require 'glob'
@@ -295,7 +295,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
 
     # Find the appropriate parser for the file
     parser = _.find parsers, (parser) ->
-      _.endsWith filename, parser
+      _str.endsWith filename, parser
 
     contents = if fileHasChanged(fullPath) and parser? or 
                not  @_preprocessedCache[filename]?
@@ -381,7 +381,7 @@ uglify = (str) ->
 
 embedFiles = (filename, contents) =>
   
-  endsWithEmbed = _.endsWith path.basename(filename).split('.')[0], '_embed'
+  endsWithEmbed = _str.endsWith path.basename(filename).split('.')[0], '_embed'
   return contents if not contents? or contents is '' or not endsWithEmbed
   
   # Table of mime types depending on file extension
@@ -406,7 +406,7 @@ embedFiles = (filename, contents) =>
 
     start = offsetContents.indexOf('url(') + 4 + offset
     end = contents.substring(start, contents.length).indexOf(')') + start
-    filename = _.trim _.trim(contents.substring(start, end), '"'), "'"
+    filename = _str.trim _str.trim(contents.substring(start, end), '"'), "'"
     filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
     mime = mimes[path.extname filename]
     
@@ -415,7 +415,7 @@ embedFiles = (filename, contents) =>
         base64Str = fs.readFileSync(path.resolve filename).toString('base64')
       
         newUrl = "data:#{mime};base64,#{base64Str}"
-        contents = _.splice(contents, start, end - start, newUrl)
+        contents = _str.splice(contents, start, end - start, newUrl)
         end = start + newUrl.length + 4
       else
         throw new Error 'Tried to embed data-uri, but could not find file ' + filename
@@ -435,7 +435,7 @@ embedFiles = (filename, contents) =>
   
 gzipPkg = (contents, filename, callback) =>
   file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
-  ext = if _.endsWith filename, '.js' then '.jgz' else '.cgz'
+  ext = if _str.endsWith filename, '.js' then '.jgz' else '.cgz'
   outputFilename = file + ext
   zlib.gzip contents, (err, buf) ->
     fs.writeFile outputFilename, buf, callback
