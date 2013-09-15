@@ -533,6 +533,25 @@ describe '#package', ->
       process.cwd() + '/public/assets/' + fs.readdirSync(process.cwd() + '/public/assets/')[0]
     ).toString().should.include 'var foo'
       
+  it 'adds a newline between concatenated files', ->
+    nap
+      mode: 'test'
+      assets:
+        js:
+          all: ['/test/fixtures/concat_js/myfunc.js','/test/fixtures/concat_js/myvar.js']
+    nap.package()
+    readPkg('all.js').toString().should.include '\nvar'
+  
+  it 'adds a newline between concatenated files and still works when minified', ->
+    nap
+      mode: 'test'
+      minify: true
+      assets:
+        js:
+          all: ['/test/fixtures/concat_js/myfunc.js','/test/fixtures/concat_js/myvar.js']
+    nap.package()
+    readPkg('all.js').toString().should.include '\nvar'
+  
   describe 'when in development mode', ->
     
     it 'adds the jade runtime', ->
