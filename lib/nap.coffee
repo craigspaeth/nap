@@ -31,7 +31,7 @@ module.exports = (options = {}) =>
   expandAssetGlobs()
 
   # Config defaults
-  @publicDir = options.publicDir ? '/public'
+  @publicDir = path.resolve(process.cwd(), options.publicDir || 'public')
   @mode = options.mode ? switch process.env.NODE_ENV
     when 'staging' then 'production'
     when 'production' then 'production'
@@ -41,13 +41,13 @@ module.exports = (options = {}) =>
   @minify = options.minify ? true
   @_tmplPrefix = 'window.JST = window.JST || {};\n'
   @_assetsDir = '/assets'
-  @_outputDir = path.normalize @publicDir + @_assetsDir
+  @_outputDir = path.join(@publicDir, @_assetsDir)
   @_fileMtimeMap = {}
   @_preprocessedCache = {}
   @_fingerprintCache = { js: {}, jst: {}, css: {} }
   @getNamespace = options.getNamespace ? @defaultGetNamespace
   
-  unless fs.existsSync process.cwd() + @publicDir
+  unless fs.existsSync @publicDir
     throw new Error "The directory #{@publicDir} doesn't exist"
   
   clearAssetsDir() if @mode is 'development'
@@ -122,8 +122,8 @@ module.exports.jst = (pkg, gzip = @gzip) =>
   expandAssetGlobs()
   
   unless @usingMiddleware
-    fs.writeFileSync (process.cwd() + @_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
-    fs.writeFileSync (process.cwd() + @_outputDir + '/nap-templates-prefix.js'), @_tmplPrefix
+    fs.writeFileSync (@_outputDir + '/' + pkg + '.jst.js'), generateJSTs pkg
+    fs.writeFileSync (@_outputDir + '/nap-templates-prefix.js'), @_tmplPrefix
   
   """
   <script src='#{@_assetsDir}/nap-templates-prefix.js' type='text/javascript'></script>
@@ -360,7 +360,7 @@ preprocessPkg = (pkg, type) =>
 # @return {String} The new full directory of the output file
 
 writeFile = (filename, contents) =>
-  file = process.cwd() + @_outputDir + '/' + filename
+  file = path.join(@_outputDir, filename)
   dir = path.dirname file
   mkdirp.sync dir, '0755' unless fs.existsSync dir
   fs.writeFileSync file, contents ? ''
@@ -407,7 +407,7 @@ embedFiles = (filename, contents) =>
     start = offsetContents.indexOf('url(') + 4 + offset
     end = contents.substring(start, contents.length).indexOf(')') + start
     filename = _str.trim _str.trim(contents.substring(start, end), '"'), "'"
-    filename = process.cwd() + @publicDir + '/' + filename.replace /^\//, ''
+    filename = path.join(@publicDir, filename.replace(/^\//, ''))
     mime = mimes[path.extname filename]
     
     if mime?    
@@ -434,7 +434,7 @@ embedFiles = (filename, contents) =>
 # @param {Function} callback The callback after gzipping
   
 gzipPkg = (contents, filename, callback) =>
-  file = "#{process.cwd() + @_outputDir + '/'}#{filename}"
+  file = path.join(@_outputDir, filename)
   ext = if _str.endsWith filename, '.js' then '.jgz' else '.cgz'
   outputFilename = file + ext
   zlib.gzip contents, (err, buf) ->
@@ -476,5 +476,5 @@ expandAssetGlobs = =>
 # Deletes all of the files in the assets directory.
 
 clearAssetsDir = =>
-  rimraf.sync "#{process.cwd()}/#{@publicDir}/assets"
-  fs.mkdirSync(process.cwd() + @_outputDir, '0755')
+  rimraf.sync(@_outputDir)
+  fs.mkdirSync(@_outputDir, '0755')

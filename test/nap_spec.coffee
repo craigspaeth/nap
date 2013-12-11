@@ -16,20 +16,20 @@ readPkg = (pkg) ->
 describe 'options.publicDir', ->
 
   it "will default to '/public'", ->
-    nap(assets: {}).publicDir.should.equal '/public'
+    nap(assets: {}).publicDir.should.match /\/public$/
  
   it "will throw an error if the directory doesn't exist", ->
     try
-      nap(assets: {}, publicDir: '/foo/bar/')
+      nap(assets: {}, publicDir: '/foo/bar')
       throw new Error()
     catch e
-      e.message.should.equal "The directory /foo/bar/ doesn't exist"
+      e.message.should.equal "The directory /foo/bar doesn't exist"
   
   it 'will create an assets directory in publicDir if it doesnt exit', ->
-    nap(assets: {}, publicDir: '/test/fixtures/')
-    dir = process.cwd() + '/test/fixtures/assets'
+    nap(assets: {}, publicDir: 'test/fixtures/')
+    dir = path.join(process.cwd(), '/test/fixtures/assets')
     exists = fs.existsSync dir
-    exists.should.be.ok 
+    exists.should.be.ok
     
 describe 'mode', ->
 
