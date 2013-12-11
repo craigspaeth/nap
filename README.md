@@ -83,8 +83,9 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 #### assets
 the assets object containing all of your package declarations
 #### publicDir
-_defaults to */public*_  
-your public directory where you serve static content
+_defaults to *public*_
+your public directory where you serve static content.
+This is relative to `process.cwd()` unless you specify an absolute path.
 #### mode
 _defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'_  
 the mode you want nap to be in 'production' or 'development'
@@ -99,7 +100,7 @@ Opt out of minifying your code when calling `package`.
 
 ````javascript
 nap({
-  publicDir: '/public',
+  publicDir: 'public',
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/',
   gzip: true,
