@@ -142,7 +142,7 @@ module.exports.package = (callback = ->) =>
   
   if @assets.js?
     for pkg, files of @assets.js
-      contents = (contents for fn, contents of preprocessPkg pkg, 'js').join('\n')
+      contents = (contents for fn, contents of preprocessPkg pkg, 'js').join(';\n')
       contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('js', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.js"
