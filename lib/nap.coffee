@@ -31,7 +31,8 @@ module.exports = (options = {}) =>
   expandAssetGlobs()
 
   # Config defaults
-  @publicDir = path.resolve(process.cwd(), options.publicDir || 'public')
+  @appDir = (if options.appDir? then options.appDir else process.cwd())
+  @publicDir = path.resolve(@appDir, options.publicDir || 'public')
   @mode = options.mode ? switch process.env.NODE_ENV
     when 'staging' then 'production'
     when 'production' then 'production'
@@ -191,7 +192,7 @@ module.exports.middleware = (req, res, next) =>
       for pkg, filenames of @assets.css
         for filename in filenames
           if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = fs.readFileSync(path.resolve @appDir + '/' + filename).toString()
             contents = preprocess contents, filename
             res.end contents
             return
@@ -211,7 +212,7 @@ module.exports.middleware = (req, res, next) =>
       for pkg, filenames of @assets.js
         for filename in filenames
           if req.url.replace(/^\/assets\/|.(?!.*\.).*/g, '') is filename.replace(/.(?!.*\.).*/, '')
-            contents = fs.readFileSync(path.resolve process.cwd() + '/' + filename).toString()
+            contents = fs.readFileSync(path.resolve @appDir + '/' + filename).toString()
             contents = preprocess contents, filename
             res.end contents
             return
@@ -232,7 +233,7 @@ module.exports.preprocessors = preprocessors =
 
   '.styl': (contents, filename) ->
     require('stylus')(contents)
-      .set('filename', process.cwd() + '/' + filename)
+      .set('filename', @appDir + '/' + filename)
       .use(require('nib')())
       .render (err, out) ->
         throw(err) if err
@@ -291,7 +292,7 @@ module.exports.generateJSTs = generateJSTs = (pkg) =>
   for filename in @assets.jst[pkg]
 
     # Read the file and compile it into a javascript function string
-    fullPath = path.resolve process.cwd() + '/' + filename
+    fullPath = path.resolve @appDir + '/' + filename
 
     # Find the appropriate parser for the file
     parser = _.find parsers, (parser) ->
@@ -342,7 +343,7 @@ preprocess = (contents, filename) =>
 preprocessPkg = (pkg, type) =>
   obj = {}
   for filename in @assets[type][pkg]
-    fullPath = path.resolve process.cwd() + '/' + filename
+    fullPath = path.resolve @appDir + '/' + filename
     contents = if fileHasChanged(fullPath) or not @_preprocessedCache[filename]?
                  data = fs.readFileSync(fullPath).toString()
                  @_preprocessedCache[filename] = preprocess(data, filename)
@@ -461,7 +462,7 @@ module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
 # Goes through asset declarations and expands them into full file paths, globs and all.
 expandAssetGlobs = =>
   assets = {js: {}, css: {}, jst: {}}
-  appDir = process.cwd().replace(/\\/g, "\/")
+  appDir = @appDir.replace(/\\/g, "\/")
   for key, obj of @originalAssets
     for pkg, patterns of @originalAssets[key]
       matches = []
