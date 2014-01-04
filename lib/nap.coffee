@@ -28,10 +28,10 @@ module.exports = (options = {}) =>
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
   @assets = _.clone options.assets
   @originalAssets = _.clone options.assets
+  @appDir = (if options.appDir? then options.appDir else process.cwd())
   expandAssetGlobs()
 
   # Config defaults
-  @appDir = (if options.appDir? then options.appDir else process.cwd())
   @publicDir = path.resolve(@appDir, options.publicDir || 'public')
   @mode = options.mode ? switch process.env.NODE_ENV
     when 'staging' then 'production'
