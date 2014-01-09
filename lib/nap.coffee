@@ -28,10 +28,10 @@ module.exports = (options = {}) =>
     throw new Error "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
   @assets = _.clone options.assets
   @originalAssets = _.clone options.assets
-  @appDir = (if options.appDir? then options.appDir else process.cwd())
   expandAssetGlobs()
 
   # Config defaults
+  @appDir = (if options.appDir? then options.appDir else process.cwd())
   @publicDir = path.resolve(@appDir, options.publicDir || 'public')
   @mode = options.mode ? switch process.env.NODE_ENV
     when 'staging' then 'production'
@@ -462,15 +462,14 @@ module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
 # Goes through asset declarations and expands them into full file paths, globs and all.
 expandAssetGlobs = =>
   assets = {js: {}, css: {}, jst: {}}
-  appDir = @appDir.replace(/\\/g, "\/")
   for key, obj of @originalAssets
     for pkg, patterns of @originalAssets[key]
       matches = []
       for pattern in patterns
-        dirs = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
+        dirs = glob.sync path.resolve("#{@appDir}/#{pattern}").replace(/\\/g, "\/")
         matches = matches.concat(dirs)
       matches = _.uniq _.flatten matches
-      matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
+      matches = (file.replace(@appDir, '').replace(/^\//, '') for file in matches)
       assets[key][pkg] = matches
   @assets = assets
 
