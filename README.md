@@ -81,24 +81,24 @@ Simply pass a set of options to the main `nap` function to configure your asset 
 ## Options
 
 #### assets
-the assets object containing all of your package declarations
+The assets object containing all of your package declarations
 #### appDir
-_defaults to *process.cwd()*_
+**defaults to `process.cwd()`**
 The base directory to resolve files from.
 #### publicDir
-_defaults to *public*_
-your public directory where you serve static content.
+**defaults to `public`**
+Your public directory where you serve static content.
 This is relative to `process.cwd()` unless you specify an absolute path.
 #### mode
-_defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'_
-the mode you want nap to be in 'production' or 'development'
+**defaults to 'production' on NODE_ENV=staging and NODE_ENV=production, otherwise 'development'**
+The mode you want nap to be in 'production' or 'development'
 #### cdnUrl
 If you are using a CDN you can pass the url root of where your asset packages are stored. The nap helpers will point there instead of the local */public/assets* dir in 'production' mode.
 #### gzip
-_defaults to false_
+**defaults to false**
 Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped packages in production mode unless you pass false as a second argument `nap.js('package-name', false)`
 #### minify
-_defaults to true_
+**defaults to true**
 Opt out of minifying your code when calling `package`.
 
 ````javascript
