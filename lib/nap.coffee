@@ -231,7 +231,7 @@ module.exports.preprocessors = preprocessors =
       err.stack = "Nap error compiling #{filename}\n" + err.stack
       throw err
 
-  '.styl': (contents, filename) ->
+  '.styl': (contents, filename) =>
     require('stylus')(contents)
       .set('filename', @appDir + '/' + filename)
       .use(require('nib')())
@@ -252,7 +252,7 @@ module.exports.preprocessors = preprocessors =
 module.exports.templateParsers = templateParsers =
 
   '.jade': (contents, filename) ->
-    require('jade').compile(contents, { client: true, compileDebug: true })
+    require('jade').compileClient(contents, { compileDebug: true })
 
   '.mustache': (contents, filename) ->
     'new Hogan.Template(' + require('hogan.js').compile(contents, { asString: true }) + ')'
