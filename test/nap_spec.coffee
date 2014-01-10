@@ -70,7 +70,7 @@ describe 'appDir', ->
         js:
           foo: ['/src/*.coffee']
     nap.js('foo').should
-      .equal "<script src='/assets/src/foo.js' type='text/javascript'></script>"
+      .include "<script src='/assets/src/foo.js' type='text/javascript'></script>"
 
 describe '#js', ->
 
