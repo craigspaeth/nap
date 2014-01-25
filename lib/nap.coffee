@@ -469,7 +469,7 @@ expandAssetGlobs = =>
         dirs = glob.sync path.resolve("#{@appDir}/#{pattern}").replace(/\\/g, "\/")
         matches = matches.concat(dirs)
       matches = _.uniq _.flatten matches
-      matches = (file.replace(@appDir, '').replace(/^\//, '') for file in matches)
+      matches = (path.normalize(file).replace(@appDir, '').replace(/^\//, '').replace(/\\/g, '\/') for file in matches)
       assets[key][pkg] = matches
   @assets = assets
 
