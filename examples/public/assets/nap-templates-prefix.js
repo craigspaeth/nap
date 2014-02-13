@@ -1,0 +1,1 @@
+window.JST = window.JST || {};

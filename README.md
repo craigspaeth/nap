@@ -7,7 +7,10 @@
 ### 1. Declare asset packages
 
 ````javascript
-global.nap = require('nap');
+var app = express();
+var nap = require('nap');
+
+app.locals.nap = nap;
 
 nap({
   assets: {

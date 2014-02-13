@@ -1,14 +1,35 @@
-// 
-// Typical express setup
-// 
-
-var express = require('express')
-  , routes = require('./routes')
-  , http = require('http')
-  , path = require('path');
-
+var express = require('express');
+var routes = require('./routes');
+var http = require('http');
+var path = require('path');
+var nap = require(process.cwd() + '../../lib');
 var app = express();
 
+// nap config
+nap({
+  assets: {
+    js: {
+      alerts: [
+        '/scripts/one.js',
+        '/scripts/two.js',
+        '/scripts/**/**.coffee'
+      ]
+    },
+    css: {
+      all: [
+        '/stylesheets/**/*'
+      ]
+    },
+    jst: {
+      templates: [
+        '/templates/**/*.jade'
+      ]
+    }
+  }
+});
+app.locals.nap = nap;
+
+// express config
 app.configure(function(){
   app.set('port', process.env.PORT || 4000);
   app.set('views', __dirname + '/views');
@@ -20,44 +41,16 @@ app.configure(function(){
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });
-
 app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+// routes
 app.get('/', routes.index);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
+// Package assets & start server
+nap.package(function() {
+  http.createServer(app).listen(app.get('port'), function(){
+    console.log("Express server listening on port " + app.get('port'));
+  });
 });
-
-// 
-// Nap configuration
-// 
-
-global.nap = require(process.cwd() + '../../lib');
-
-nap({
-  mode: 'production',
-  assets: {
-    js: {
-      alerts: [
-        '/scripts/one.js', 
-        '/scripts/two.js', 
-        '/scripts/**/**.coffee'
-      ]
-    },
-    css: {
-      all: [
-        '/stylesheets/text.styl',
-        '/stylesheets/bg.css'
-      ]
-    },
-    jst: {
-      templates: [
-        '/templates/**/*.jade'
-      ]
-    }
-  }
-});
-nap.package()
