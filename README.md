@@ -106,7 +106,7 @@ Opt out of minifying your code when calling `package`.
 
 ````javascript
 nap({
-  appDir: 'public'
+  appDir: process.cwd()
   publicDir: 'public',
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/',

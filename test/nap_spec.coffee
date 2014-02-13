@@ -61,6 +61,17 @@ it "will throw an error if no assets are specified", ->
     e.message.should
       .equal "You must specify an 'assets' obj with keys 'js', 'css', or 'jst'"
 
+describe 'appDir', ->
+
+  it 'can configure where the app is relative to nap', ->
+    nap
+      appDir: process.cwd() + '/test/fixtures/app_dir'
+      assets:
+        js:
+          foo: ['/src/*.coffee']
+    nap.js('foo').should
+      .include "<script src='/assets/src/foo.js' type='text/javascript'></script>"
+
 describe '#js', ->
 
   it 'takes wildcards', ->
