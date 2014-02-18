@@ -38,6 +38,7 @@ module.exports = (options = {}) =>
     when 'production' then 'production'
     else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
+  @uglifyOpts = options.uglifyOpts ? {}
   @gzip = options.gzip ? false
   @minify = options.minify ? true
   @_tmplPrefix = 'window.JST = window.JST || {};\n'
@@ -371,8 +372,8 @@ writeFile = (filename, contents) =>
 # @param {String} str String of js to be uglified
 # @return {String} str Minifed js string
 
-uglify = (str) ->
-  uglifyjs.minify(str, { fromString: true }).code
+uglify = (str) =>
+  uglifyjs.minify(str, _.extend({ fromString: true }, @uglifyOpts)).code
 
 # Given the contents of a css file, replace references to url() with base64 embedded images & fonts.
 #

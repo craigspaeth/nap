@@ -623,6 +623,17 @@ describe '#package', ->
       nap.package()
       readPkg('all.js').should.include "var o;o=\"foo\"}"
 
+    it 'minifies js without mangling', ->
+      nap
+        mode: 'production'
+        assets:
+          js:
+            all: ['/test/fixtures/1/bar.coffee', '/test/fixtures/1/foo.js']
+        uglifyOpts: { mangle: false }
+      nap.package()
+      readPkg('all.js').should.include "var foo;foo=\"foo\"}"
+      readPkg('all.js').should.not.include "var o;o=\"foo\"}"
+
     it 'minifies jsts', ->
       nap
         mode: 'production'

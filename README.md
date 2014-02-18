@@ -103,6 +103,8 @@ Gzips .jgz and .cgz asset packages. The nap helpers will point to these gzipped 
 #### minify
 **defaults to true**
 Opt out of minifying your code when calling `package`.
+#### uglifyOpts
+Pass in options to [uglify](https://github.com/mishoo/UglifyJS) such as `{ mangle: false}` to fine-tune minifying.
 
 ````javascript
 nap({
@@ -111,6 +113,8 @@ nap({
   mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   cdnUrl: 'http://s3.amazonaws.com/my-bucket/assets/',
   gzip: true,
+  minify: true,
+  uglifyOpts: { mangle: false },
   assets: {
     js: {
       backbone: [
