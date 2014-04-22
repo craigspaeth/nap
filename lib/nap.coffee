@@ -350,7 +350,7 @@ preprocessPkg = (pkg, type) =>
                  @_preprocessedCache[filename] = preprocess(data, filename)
                else
                  @_preprocessedCache[filename]
-    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
+    outputFilename = if filename.match /\.map$/ then filename else filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
 
