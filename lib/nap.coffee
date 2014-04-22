@@ -82,7 +82,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
   output = ''
   for filename, contents of preprocessPkg pkg, 'js'
     writeFile filename, contents unless @usingMiddleware
-    output += "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
+    output += if filename.match /\.map$/ then "" else "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
   output
 
 # Run css pre-processors & output the packages in dev.
@@ -104,7 +104,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   output = ''
   for filename, contents of preprocessPkg pkg, 'css'
     writeFile filename, contents unless @usingMiddleware
-    output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
+    output += if filename.match /\.map$/ then "" else "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
 
 # Compile the templates into JST['file/path'] : functionString pairs in dev
@@ -119,7 +119,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
     fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
-    return "<script src='#{src}' type='text/javascript'></script>"
+    return if filename.match /\.map$/ then "" else "<script src='#{src}' type='text/javascript'></script>"
 
   expandAssetGlobs()
 
