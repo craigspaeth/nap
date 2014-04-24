@@ -1,6 +1,6 @@
 {
   "name": "nap",
-  "version": "0.7.17",
+  "version": "0.7.18",
   "author": {
     "name": "Craig Spaeth",
     "email": "craigspaeth@gmail.com",
@@ -20,7 +20,7 @@
     "test": "node_modules/.bin/mocha"
   },
   "engines": {
-    "node": ">= 0.6.0"
+    "node": ">= 0.10.0"
   },
   "dependencies": {
     "coffee-script": "~1",
