@@ -591,7 +591,7 @@ describe '#package', ->
             templates: ['/test/fixtures/1/foo.jade', '/test/fixtures/templates/index/foo.jade']
       nap.package()
       fs.readdirSync(process.cwd() + '/public/assets')[0]
-        .should.include 'templates-81e3c2f5027b4cf4c4e7a48e79c4c430'
+        .should.include 'templates-' + nap.fingerprintForPkg 'jst', 'templates'
 
   describe 'when in production mode', ->
 
