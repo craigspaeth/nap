@@ -82,7 +82,7 @@ module.exports.js = (pkg, gzip = @gzip) =>
   output = ''
   for filename, contents of preprocessPkg pkg, 'js'
     writeFile filename, contents unless @usingMiddleware
-    output += "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
+    output += if filename.match /\.map$/ then "" else "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
   output
 
 # Run css pre-processors & output the packages in dev.
@@ -104,7 +104,7 @@ module.exports.css = (pkg, gzip = @gzip) =>
   output = ''
   for filename, contents of preprocessPkg pkg, 'css'
     writeFile filename, contents unless @usingMiddleware
-    output += "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
+    output += if filename.match /\.map$/ then "" else "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
   output
 
 # Compile the templates into JST['file/path'] : functionString pairs in dev
@@ -350,7 +350,7 @@ preprocessPkg = (pkg, type) =>
                  @_preprocessedCache[filename] = preprocess(data, filename)
                else
                  @_preprocessedCache[filename]
-    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
+    outputFilename = if filename.match /\.map$/ then filename else filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
 
