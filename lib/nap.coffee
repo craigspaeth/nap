@@ -119,7 +119,7 @@ module.exports.jst = (pkg, gzip = @gzip) =>
     fingerprint = '-' + fingerprintForPkg('jst', pkg) if @mode is 'production'
     src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.jst.js"
     src += '.jgz' if gzip
-    return if filename.match /\.map$/ then "" else "<script src='#{src}' type='text/javascript'></script>"
+    return "<script src='#{src}' type='text/javascript'></script>"
 
   expandAssetGlobs()
 
