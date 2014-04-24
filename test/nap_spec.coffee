@@ -318,6 +318,16 @@ describe '#css', ->
       fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo.css')
         .toString().should.include '#header {\n  color: #4d926f;'
 
+    it 'compiles any less files with imports into css', ->
+      nap
+        assets:
+          css:
+            foo: ['/test/fixtures/1/foo-include.less']
+      nap.css('foo').should
+        .equal "<link href=\'/assets/test/fixtures/1/foo-include.css\' rel=\'stylesheet\' type=\'text/css\'>"
+      fs.readFileSync(process.cwd() + '/public/assets/test/fixtures/1/foo-include.css')
+        .toString().should.include '#header {\n  color: #4d926f;'
+
   describe "in production", ->
 
     it 'returns a link tag pointing to the packaged file', ->
