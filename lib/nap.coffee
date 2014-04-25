@@ -241,10 +241,14 @@ module.exports.preprocessors = preprocessors =
         contents = out
     contents
 
-  '.less': (contents, filename) ->
-    require('less').render contents, {filename: filename}, (err, out) ->
-      throw(err) if err
-      contents = out
+  '.less': (contents, filename) =>
+    dir = @appDir + '/' + path.dirname(filename)
+    parser = new(require('less').Parser)
+      paths: [dir]
+      filename: path.basename(filename)
+      syncImport: true
+    parser.parse contents, (err, tree) ->
+      contents = tree.toCSS()
     contents
 
 # An obj of default fileExtension: templateParserFunction pairs
