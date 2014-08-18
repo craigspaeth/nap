@@ -148,9 +148,9 @@ module.exports.package = (callback = ->) =>
       contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('js', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.js"
-      writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename, contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
   if @assets.css?
     for pkg, files of @assets.css
@@ -160,9 +160,9 @@ module.exports.package = (callback = ->) =>
       contents = sqwish.minify contents if @mode is 'production'
       fingerprint = '-' + fingerprintForPkg('css', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.css"
-      writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename, contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
   if @assets.jst?
     for pkg, files of @assets.jst
@@ -171,9 +171,9 @@ module.exports.package = (callback = ->) =>
       contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('jst', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
-      writeFile filename , contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename , contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
 # Instead of compiling & writing the packages to disk, nap will compile and serve the files in
 # memory per request.
@@ -365,11 +365,12 @@ preprocessPkg = (pkg, type) =>
 # @param {String} contents Contents of the file to be output
 # @return {String} The new full directory of the output file
 
-writeFile = (filename, contents) =>
+writeFile = (filename, contents, callback) =>
   file = path.join(@_outputDir, filename)
   dir = path.dirname file
   mkdirp.sync dir, '0755' unless fs.existsSync dir
   fs.writeFileSync file, contents ? ''
+  callback() if callback?
 
 # Runs uglify js on a string of javascript
 #
