@@ -55,13 +55,13 @@ module.exports = (options = {}) =>
   clearAssetsDir() if @mode is 'development'
 
   # Add any javascript necessary for templates (like the jade runtime)
-  exts = _.uniq(ext = path.extname(filename) for filename in _.flatten @assets.jst)
+  exts = _.uniq(ext = path.extname(filename) for filename in _.flatten _.values @assets.jst)
   for ext in exts
     switch ext
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
 
-  @
+  return this
 
 # Run js pre-processors & output the packages in dev.
 #

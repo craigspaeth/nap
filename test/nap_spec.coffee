@@ -1,5 +1,5 @@
 require './helpers/spec_helper.coffee'
-nap = require '../lib/nap'
+nap = require '../lib'
 fs = require 'fs'
 path = require 'path'
 wrench = require 'wrench'
