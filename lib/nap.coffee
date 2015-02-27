@@ -38,6 +38,7 @@ module.exports = (options = {}) =>
     when 'production' then 'production'
     else 'development'
   @cdnUrl = if options.cdnUrl? then options.cdnUrl.replace /\/$/, '' else undefined
+  @uglifyOpts = options.uglifyOpts ? {}
   @gzip = options.gzip ? false
   @minify = options.minify ? true
   @_tmplPrefix = 'window.JST = window.JST || {};\n'
@@ -54,13 +55,13 @@ module.exports = (options = {}) =>
   clearAssetsDir() if @mode is 'development'
 
   # Add any javascript necessary for templates (like the jade runtime)
-  exts = _.uniq(ext = path.extname(filename) for filename in _.flatten @assets.jst)
+  exts = _.uniq(ext = path.extname(filename) for filename in _.flatten _.values @assets.jst)
   for ext in exts
     switch ext
       when '.jade' then @_tmplPrefix = jadeRuntime + '\n' + @_tmplPrefix
       when '.mustache' then @_tmplPrefix = hoganPrefix + '\n' + @_tmplPrefix
 
-  @
+  return this
 
 
 # Returns the script / css urls
@@ -83,7 +84,8 @@ module.exports.getSrcUrls = getSrcUrls = (type, pkg, gzip) =>
   urls = []
   for filename, contents of preprocessPkg pkg, type
     writeFile filename, contents unless @usingMiddleware
-    urls.push "#{@_assetsDir}/#{filename}"
+    unless filename.match /\.map$/
+      urls.push "#{@_assetsDir}/#{filename}"
   return urls
 
 # Run js pre-processors & output the packages in dev.
@@ -151,9 +153,9 @@ module.exports.package = (callback = ->) =>
       contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('js', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.js"
-      writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename, contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
   if @assets.css?
     for pkg, files of @assets.css
@@ -163,9 +165,9 @@ module.exports.package = (callback = ->) =>
       contents = sqwish.minify contents if @mode is 'production'
       fingerprint = '-' + fingerprintForPkg('css', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.css"
-      writeFile filename, contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename, contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
   if @assets.jst?
     for pkg, files of @assets.jst
@@ -174,9 +176,9 @@ module.exports.package = (callback = ->) =>
       contents = uglify contents if @mode is 'production' and @minify
       fingerprint = '-' + fingerprintForPkg('jst', pkg)
       filename = "#{pkg}#{fingerprint ? ''}.jst.js"
-      writeFile filename , contents
-      if @gzip then gzipPkg(contents, filename, callback) else callback()
-      total++
+      writeFile filename , contents, (err) =>
+        if @gzip then gzipPkg(contents, filename, callback) else callback()
+        total++
 
 # Instead of compiling & writing the packages to disk, nap will compile and serve the files in
 # memory per request.
@@ -235,7 +237,7 @@ module.exports.preprocessors = preprocessors =
       err.stack = "Nap error compiling #{filename}\n" + err.stack
       throw err
 
-  '.styl': (contents, filename) ->
+  '.styl': (contents, filename) =>
     require('stylus')(contents)
       .set('filename', @appDir + '/' + filename)
       .use(require('nib')())
@@ -244,10 +246,14 @@ module.exports.preprocessors = preprocessors =
         contents = out
     contents
 
-  '.less': (contents, filename) ->
-    require('less').render contents, (err, out) ->
-      throw(err) if err
-      contents = out
+  '.less': (contents, filename) =>
+    dir = @appDir + '/' + path.dirname(filename)
+    parser = new(require('less').Parser)
+      paths: [dir]
+      filename: path.basename(filename)
+      syncImport: true
+    parser.parse contents, (err, tree) ->
+      contents = tree.toCSS()
     contents
 
 # An obj of default fileExtension: templateParserFunction pairs
@@ -256,7 +262,7 @@ module.exports.preprocessors = preprocessors =
 module.exports.templateParsers = templateParsers =
 
   '.jade': (contents, filename) ->
-    require('jade').compile(contents, { client: true, compileDebug: true })
+    require('jade').compileClient(contents, { compileDebug: true })
 
   '.mustache': (contents, filename) ->
     'new Hogan.Template(' + require('hogan.js').compile(contents, { asString: true }) + ')'
@@ -353,7 +359,7 @@ preprocessPkg = (pkg, type) =>
                  @_preprocessedCache[filename] = preprocess(data, filename)
                else
                  @_preprocessedCache[filename]
-    outputFilename = filename.replace /\.[^.]*$/, '' + '.' + type
+    outputFilename = if filename.match /\.map$/ then filename else filename.replace /\.[^.]*$/, '' + '.' + type
     obj[outputFilename] = contents
   obj
 
@@ -364,19 +370,20 @@ preprocessPkg = (pkg, type) =>
 # @param {String} contents Contents of the file to be output
 # @return {String} The new full directory of the output file
 
-writeFile = (filename, contents) =>
+writeFile = (filename, contents, callback) =>
   file = path.join(@_outputDir, filename)
   dir = path.dirname file
   mkdirp.sync dir, '0755' unless fs.existsSync dir
   fs.writeFileSync file, contents ? ''
+  callback() if callback?
 
 # Runs uglify js on a string of javascript
 #
 # @param {String} str String of js to be uglified
 # @return {String} str Minifed js string
 
-uglify = (str) ->
-  uglifyjs.minify(str, { fromString: true }).code
+uglify = (str) =>
+  uglifyjs.minify(str, _.extend({ fromString: true }, @uglifyOpts)).code
 
 # Given the contents of a css file, replace references to url() with base64 embedded images & fonts.
 #
@@ -466,15 +473,14 @@ module.exports.fingerprintForPkg = fingerprintForPkg = (pkgType, pkgName) =>
 # Goes through asset declarations and expands them into full file paths, globs and all.
 expandAssetGlobs = =>
   assets = {js: {}, css: {}, jst: {}}
-  appDir = @appDir.replace(/\\/g, "\/")
   for key, obj of @originalAssets
     for pkg, patterns of @originalAssets[key]
       matches = []
       for pattern in patterns
-        dirs = glob.sync path.resolve("#{appDir}/#{pattern}").replace(/\\/g, "\/")
+        dirs = glob.sync path.resolve("#{@appDir}/#{pattern}").replace(/\\/g, "\/")
         matches = matches.concat(dirs)
       matches = _.uniq _.flatten matches
-      matches = (file.replace(appDir, '').replace(/^\//, '') for file in matches)
+      matches = (path.normalize(file).replace(@appDir, '').replace(/^\//, '').replace(/\\/g, '\/') for file in matches)
       assets[key][pkg] = matches
   @assets = assets
 
