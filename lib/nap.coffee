@@ -63,26 +63,41 @@ module.exports = (options = {}) =>
 
   return this
 
+
+# Returns the script / css urls
+#
+# @param {String} type Must be 'js' or 'css'
+# @param {String} pkg The name of the package to output
+# @return {String} Script tag(s) pointing to the ouput package(s)
+module.exports.getSrcUrls = getSrcUrls = (type, pkg, gzip) =>
+  throw new Error "Cannot find package '#{pkg}'" unless @assets[type][pkg]?
+
+  if @mode is 'production'
+    fingerprint = '-' + fingerprintForPkg(type, pkg)
+    extension = "#{type}" 
+    extension += ".#{type[0]}gz" if gzip
+    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.#{extension}"
+    return [src]
+
+  expandAssetGlobs()
+
+  urls = []
+  for filename, contents of preprocessPkg pkg, type
+    writeFile filename, contents unless @usingMiddleware
+    unless filename.match /\.map$/
+      urls.push "#{@_assetsDir}/#{filename}"
+  return urls
+
 # Run js pre-processors & output the packages in dev.
 #
 # @param {String} pkg The name of the package to output
 # @return {String} Script tag(s) pointing to the ouput package(s)
 
 module.exports.js = (pkg, gzip = @gzip) =>
-  throw new Error "Cannot find package '#{pkg}'" unless @assets.js[pkg]?
-
-  if @mode is 'production'
-    fingerprint = '-' + fingerprintForPkg('js', pkg) if @mode is 'production'
-    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.js"
-    src += '.jgz' if gzip
-    return "<script src='#{src}' type='text/javascript'></script>"
-
-  expandAssetGlobs()
-
+  urls = getSrcUrls('js', pkg, gzip)
   output = ''
-  for filename, contents of preprocessPkg pkg, 'js'
-    writeFile filename, contents unless @usingMiddleware
-    output += if filename.match /\.map$/ then "" else "<script src='#{@_assetsDir}/#{filename}' type='text/javascript'></script>"
+  for url in urls
+    output += "<script src='#{url}' type='text/javascript'></script>"
   output
 
 # Run css pre-processors & output the packages in dev.
@@ -91,20 +106,10 @@ module.exports.js = (pkg, gzip = @gzip) =>
 # @return {String} Link tag(s) pointing to the ouput package(s)
 
 module.exports.css = (pkg, gzip = @gzip) =>
-  throw new Error "Cannot find package '#{pkg}'" unless @assets.css[pkg]?
-
-  if @mode is 'production'
-    fingerprint = '-' + fingerprintForPkg('css', pkg) if @mode is 'production'
-    src = (@cdnUrl ? @_assetsDir) + '/' + "#{pkg}#{fingerprint ? ''}.css"
-    src += '.cgz' if gzip
-    return "<link href='#{src}' rel='stylesheet' type='text/css'>"
-
-  expandAssetGlobs()
-
+  urls = getSrcUrls('css', pkg, gzip)
   output = ''
-  for filename, contents of preprocessPkg pkg, 'css'
-    writeFile filename, contents unless @usingMiddleware
-    output += if filename.match /\.map$/ then "" else "<link href='#{@_assetsDir}/#{filename}' rel='stylesheet' type='text/css'>"
+  for url in urls
+    output += "<link href='#{url}' rel='stylesheet' type='text/css'>"
   output
 
 # Compile the templates into JST['file/path'] : functionString pairs in dev
